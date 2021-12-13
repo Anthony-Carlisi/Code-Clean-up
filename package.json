@@ -1,0 +1,33 @@
+{
+  "name": "code-clean-up",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "airtable": "^0.11.1",
+    "aws-sdk": "^2.1028.0",
+    "axios": "^0.22.0",
+    "bad-words": "^3.0.4",
+    "body-parser": "^1.19.0",
+    "cross-fetch": "^3.1.4",
+    "download": "^8.0.0",
+    "express": "^4.17.1",
+    "googleapis": "^88.2.0",
+    "json2csv": "^5.0.6",
+    "moment": "^2.29.1",
+    "mssql": "^7.2.1",
+    "mysql": "^2.18.1",
+    "node-cron": "^3.0.0",
+    "node-downloader-helper": "^1.0.19",
+    "node-schedule": "^2.0.0",
+    "nodemailer": "^6.6.5",
+    "nodemon": "^2.0.14",
+    "open": "^7.4.2",
+    "request": "^2.88.2"
+  }
+}
