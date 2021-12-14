@@ -157,179 +157,90 @@ app.post('/WP/SMS/origination', (req, res) => {
 
 app.get('/api/create', function (req, res) {
   req.query['Business Phone'] = req.query['Business Phone'].slice(1);
-  console.log(req.query);
-});
-
-app.post('/api/v4', function (req, res) {
-  req.body.fields['Business Phone'] =
-    req.body.fields['Business Phone'].slice(1);
+  var cleanedLead = {};
+  cleanedLead.fields = req.query;
   airtableHelper
-    .airtableDupBlockSearch(req.body.fields['Business Phone'])
-    .then((res) => {
-      if (res === 'Dup Block') {
-        console.log('Dup Block');
-      } else if (res) {
-        console.log('lead updated');
-        airtableHelper
-          .airtableSearch(req.body.fields.Assignees, '{Email}', 'Agent Table')
-          .then((res1) => {
-            req.body.fields.Assignees = [res1.id];
-            console.log(res.id);
-            airtableHelper.airtableUpdate(req.body, res.id, 'Inbound Leads');
-            rico
-              .RicoAppOutDupBlock(req.body.fields['Business Phone'])
-              .then((response) => console.log(response));
-          });
-      } else {
-        console.log('Lead Created');
-        airtableHelper
-          .airtableSearch(req.body.fields.Assignees, '{Email}', 'Agent Table')
-          .then((res2) => {
-            console.log(res2);
-            req.body.fields.Assignees = [res2.id];
-            airtableHelper.airtableCreate(req.body, 'Merchant Records');
-            rico
-              .RicoAppOutDupBlock(req.body.fields['Business Phone'])
-              .then((response) => console.log(response));
-          });
-      }
+    .airtableSearch2(
+      req.query['Business Phone'],
+      '{Business Phone Text}',
+      'Merchant Records'
+    )
+    .then((merchantRecords) => {
+      airtableHelper
+        .airtableSearch2(req.query.Assignees, '{Email}', 'Agent Table')
+        .then((userInfo) => {
+          if (!merchantRecords.length) {
+            airtableHelper
+              .airtableSearch2(
+                req.query['Business Phone'],
+                '{Mobile Phone Formatted}',
+                'Inbound Leads'
+              )
+              .then((inbound) => {
+                if (!merchantRecords.length) {
+                  airtableHelper
+                    .airtableCreate(cleanedLead, 'Merchant Records')
+                    .then((createdLead) => {
+                      res.send(
+                        `New Lead Created please refer to MID ${createdLead.fields.MID}`
+                      );
+                    });
+                  rico
+                    .RicoAppOutDupBlock(req.query['Business Phone'])
+                    .then((response) => console.log(response));
+                } else {
+                  for (jsdata of inbound) {
+                    if (
+                      (jsdata.fields['Lead Type (Vehicle)'] =
+                        'SEO Lead' &&
+                        jsdata.fields['Created Date'] <
+                          moment(Date.now())
+                            .subtract(90, 'days')
+                            .format('YYYY-MM-DD'))
+                    ) {
+                      res.send(`This Lead is a Dup Block`);
+                    } else {
+                      airtableHelper
+                        .airtableCreate(cleanedLead, 'Merchant Records')
+                        .then((createdLead) => {
+                          res.send(
+                            `New Lead Created please refer to MID ${createdLead.fields.MID}`
+                          );
+                        });
+                      rico
+                        .RicoAppOutDupBlock(req.query['Business Phone'])
+                        .then((response) => console.log(response));
+                    }
+                  }
+                }
+              });
+          } else {
+            for (jsdata of merchantRecords) {
+              if (jsdata.fields.Assignees.includes(userInfo[0].id)) {
+                res.send(
+                  `This is already your deal please refer to MID ${jsdata.fields.MID}`
+                );
+                break;
+              }
+            }
+            for (jsdata of merchantRecords) {
+              if (
+                jsdata.fields.Status === 'Funded' ||
+                jsdata.fields['Status Change Date'] >
+                  moment(Date.now()).subtract(90, 'days').format('YYYY-MM-DD')
+              ) {
+                res.send(`This Lead is a Dup Block`);
+              } else {
+                airtableHelper
+                  .airtableUpdate(cleanedLead, jsdata.id, 'Merchant Records')
+                  .then((response) => {
+                    res.send(`Lead Reassignee to you ${jsdata.fields.MID}`);
+                  });
+              }
+            }
+          }
+        });
     });
-  res.status(200).send('API Completed');
-});
-
-app.get('/api/v3', function (req, res) {
-  var data = {
-    RequestHeader: {
-      ApiUserId: '1cab6475-0bbe-4310-95b5-0952db046c3f',
-      ApiPassword: 'SLS_49146ed',
-      RequestId: '',
-      ClassOverride: '',
-    },
-    Business: {
-      SelfReportedCashFlow: {
-        AnnualRevenue: '0',
-        MonthlyAverageCreditCardVolume: '0',
-      },
-      Address: {
-        Address1: '',
-        City: '',
-        State: '',
-        Zip: '',
-      },
-      Name: '',
-      TAG: '',
-      Status: 'app out',
-      Assignee: '',
-      UploadDate: '',
-      Phone: '',
-    },
-    Owners: [
-      {
-        HomeAddress: {
-          Address1: '',
-          City: '',
-          State: '',
-          Zip: '',
-        },
-        Name: '' + ' ' + '',
-        FirstName: '',
-        LastName: '',
-        Email: '',
-        DateOfBirth: '',
-        HomePhone: '',
-      },
-    ],
-    ApplicationData: {
-      StatedCreditHistory: '0',
-    },
-  };
-
-  for (var i = 0; i < Object.keys(req.query).length; i++) {
-    if (data.RequestHeader.hasOwnProperty(Object.keys(req.query)[i])) {
-      data.RequestHeader[Object.keys(req.query)[i]] = Object.values(req.query)[
-        i
-      ];
-    } else if (data.Business.hasOwnProperty(Object.keys(req.query)[i])) {
-      data.Business[Object.keys(req.query)[i]] = Object.values(req.query)[i];
-    } else if (
-      data.Business.Address.hasOwnProperty(Object.keys(req.query)[i])
-    ) {
-      data.Business.Address[Object.keys(req.query)[i]] = Object.values(
-        req.query
-      )[i];
-    } else if (data.Owners[0].hasOwnProperty(Object.keys(req.query)[i])) {
-      data.Owners[0][Object.keys(req.query)[i]] = Object.values(req.query)[i];
-    } else if (
-      data.Owners[0].HomeAddress.hasOwnProperty(Object.keys(req.query)[i])
-    ) {
-      data.Owners[0].HomeAddress[Object.keys(req.query)[i]] = Object.values(
-        req.query
-      )[i];
-    } else {
-      console.log(Object.keys(req.query)[i] + ' Key not Found');
-    }
-  }
-  data.Owners[0].Name =
-    data.Owners[0].FirstName + ' ' + data.Owners[0].LastName;
-
-  if (data.Business.Phone.length > 10) {
-    data.Business.Phone = data.Business.Phone.slice(1);
-  }
-  //console.log(req.query)
-  data.Business.TAG = data.Business.TAG.replace(/-/g, ' ') + ',Dialer';
-
-  // async function singleDupBlockSearch(toSearch) {
-  //     var query = `select a.MID, a.[Business Name] AS companyName, Businesses.contactname AS firstName, a.Status AS statusAt, LEFT([Team Name], CHARINDEX('/', [Team Name]) - 1) AS senior, u.email as seniorEmail, Phone = CASE WHEN QuickApps.mobile IN('', NULL) OR LEN(QuickApps.mobile) < 10 THEN a.[Business Phone] ELSE QuickApps.mobile END from (select ROW_NUMBER() OVER(PARTITION BY MID ORDER BY [Update DateTime] DESC) as tt,* from vwAssignmentsAndUpdates)a INNER JOIN Businesses ON MID = Businesses.id INNER JOIN QuickApps ON MID = QuickApps.businessid INNER JOIN Users as u ON LEFT([Team Name], CHARINDEX('/', [Team Name]) - 1) = u.name where a.tt=1 AND (((a.Status = 'submitted' OR a.Status = 'approval' OR a.Status = 'contract out' OR a.Status = 'contract in') AND [Update DateTime] BETWEEN '${moment(Date.now()).subtract(45, 'days').format('YYYY-MM-DD')}' AND '${moment(Date.now()).format('YYYY-MM-DD')}') OR (a.Status = 'funded')) AND ([Business Phone] = '${toSearch}') ORDER BY CASE a.Status WHEN 'funded' THEN 1 WHEN 'contract out' THEN 2 WHEN 'contract in' THEN 3 WHEN 'approval' THEN 4 WHEN 'submitted' THEN 5 ELSE 6 END`
-  //     let req = await mssql.mssqlSearch(query)
-  //     return (req.length > 0 ? req : false)
-  // }
-
-  //singleDupBlockSearch(2396878505).then((response) => {
-  // if (response != false) {
-  //         var sendTo = response[0].seniorEmail + ',retention@straightlinesource.com'
-  //         if (response[0].status === 'funded') {
-  //             res.send(`In-House Funded! You have been blocked from working with this Merchant.`)
-  //             console.log(sendTo)
-  //             mailer.sendNotifications(
-  //                 sendTo,
-  //                 `Your Funded Merchant MID# ${response[0].MID} is Shopping! ${data.Business.Assignee} was just blocked from creating a CRM profile.`,
-  //                 `<p><a href="https://sls.imerchantsystems.com/Default.aspx?b=${response[0].MID}" target="_blank">CRM LINK</a></p>`
-  //             )
-  //             rico.RicoAppOutDupBlock(data.Business.Phone).then(response => console.log(response))
-  //         } else {
-  //             res.send(`This Merchant is Actively working with another SLS Agent!`)
-  //             mailer.sendNotifications(
-  //                 response[0].seniorEmail,
-  //                 `Your Merchant MID# ${response[0].MID} is Shopping! ${data.Business.Assignee} was just blocked from creating a CRM profile.`,
-  //                 `<p><a href="https://sls.imerchantsystems.com/Default.aspx?b=${response[0].MID}" target="_blank">CRM LINK</a></p>`
-  //             )
-  //             rico.RicoAppOutDupBlock(data.Business.Phone).then(response => console.log(response))
-  //         }
-  //     } else {
-  console.log(req.query);
-  console.log(data);
-  axios
-    .post('https://wcfexternal80.imerchantsystems.com/', data)
-    .then((ras) => {
-      console.log(data);
-      var test = JSON.stringify(ras.data),
-        MID = test.replace(/[^0-9]/g, ''); // replace all leading non-digits with nothing
-      mailer.sendNotifications(
-        data.Business.Assignee,
-        `New App Out Created, Your MID is ${MID}`,
-        `<p><a href="https://sls.imerchantsystems.com/Default.aspx?b=${MID}" target="_blank">CRM LINK</a></p>`
-      );
-      res.redirect(`https://sls.imerchantsystems.com/Default.aspx?b=${MID}`);
-      rico
-        .RicoAppOutDupBlock(data.Business.Phone)
-        .then((response) => console.log(response));
-    })
-    .catch((error) => {
-      console.error(error);
-    });
-  // }
-
-  //})
 });
 
 app.listen(process.env.PORT || 4000);
