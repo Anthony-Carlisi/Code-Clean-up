@@ -200,13 +200,11 @@ app.get('/api/create', function (req, res) {
                     ) {
                       res.send(`This Lead is a Dup Block`);
                     } else {
-                      airtableHelper
-                        .airtableCreate(cleanedLead, 'Merchant Records')
-                        .then((createdLead) => {
-                          res.send(
-                            `New Lead Created please refer to MID ${createdLead.fields.MID}`
-                          );
-                        });
+                      airtableHelper.airtableCreate(
+                        cleanedLead,
+                        'Merchant Records'
+                      );
+                      res.send(`New Lead Created`);
                       rico
                         .RicoAppOutDupBlock(req.query['Business Phone'])
                         .then((response) => console.log(response));
@@ -234,7 +232,7 @@ app.get('/api/create', function (req, res) {
                 airtableHelper
                   .airtableUpdate(cleanedLead, jsdata.id, 'Merchant Records')
                   .then((response) => {
-                    res.send(`Lead Reassignee to you ${jsdata.fields.MID}`);
+                    res.send(`Lead Reassignee to you ${response.fields.MID}`);
                   });
               }
             }
