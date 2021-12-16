@@ -25,6 +25,19 @@ const airtableSearch2 = async (searchField, fieldToSearch, tableToSearch) => {
   return records;
 };
 
+const airtableSearch3 = async (searchField, fieldToSearch, tableToSearch) => {
+  const records = await base(tableToSearch)
+    .select({
+      filterByFormula: `AND(SEARCH(${fieldToSearch}, '${searchField}' & ""), {Lead Type (Vehicle)} = "SMS We Process")`,
+    })
+    .all();
+  if (typeof records[0] !== 'undefined') {
+    return records[0];
+  } else {
+    return undefined;
+  }
+};
+
 function airtableCreate(data, tableToCreate) {
   base(tableToCreate).create([data], { typecast: true }, (err, record) => {
     if (err) {

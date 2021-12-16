@@ -117,7 +117,7 @@ app.post('/WP/SMS/origination', (req, res) => {
   } else {
     console.log('No profane language found');
     airtableHelper
-      .airtableSearch(
+      .airtableSearch3(
         phoneNumberFormatted,
         '{Mobile Phone Formatted}',
         'Inbound Leads'
@@ -154,10 +154,10 @@ app.post('/WP/SMS/origination', (req, res) => {
       });
   }
 });
-
+// Initial Breadcrumb URL
 app.get('/api/create', function (req, res) {
+  // Remove 1 from Phone Number EX (1)5163034649
   req.query['Business Phone'] = req.query['Business Phone'].slice(1);
-  var cleanedLead = {};
   cleanedLead.fields = req.query;
   airtableHelper
     .airtableSearch2(
@@ -169,6 +169,8 @@ app.get('/api/create', function (req, res) {
       airtableHelper
         .airtableSearch2(req.query.Assignees, '{Email}', 'Agent Table')
         .then((userInfo) => {
+          console.log(userInfo);
+          req.query.Assignees = userInfo[0].fields.Name;
           if (!merchantRecords.length) {
             airtableHelper
               .airtableSearch2(
@@ -178,13 +180,11 @@ app.get('/api/create', function (req, res) {
               )
               .then((inbound) => {
                 if (!merchantRecords.length) {
-                  airtableHelper
-                    .airtableCreate(cleanedLead, 'Merchant Records')
-                    .then((createdLead) => {
-                      res.send(
-                        `New Lead Created please refer to MID ${createdLead.fields.MID}`
-                      );
-                    });
+                  airtableHelper.airtableCreate(
+                    cleanedLead,
+                    'Merchant Records'
+                  );
+                  res.send(`New Lead Created`);
                   rico
                     .RicoAppOutDupBlock(req.query['Business Phone'])
                     .then((response) => console.log(response));
