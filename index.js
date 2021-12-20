@@ -1,9 +1,7 @@
 //Modules Needed
 const express = require('express'),
   bodyParser = require('body-parser'),
-  axios = require('axios'),
   moment = require('moment'),
-  schedule = require('node-schedule'),
   Filter = require('bad-words'),
   filter = new Filter(),
   //Helper
@@ -158,6 +156,7 @@ app.post('/WP/SMS/origination', (req, res) => {
 app.get('/api/create', function (req, res) {
   // Remove 1 from Phone Number EX (1)5163034649
   req.query['Business Phone'] = req.query['Business Phone'].slice(1);
+  var cleanedLead = {};
   cleanedLead.fields = req.query;
   airtableHelper
     .airtableSearch2(
@@ -240,5 +239,11 @@ app.get('/api/create', function (req, res) {
         });
     });
 });
+
+function fn60sec() {
+  airtableHelper.airtableSubstatus();
+}
+fn60sec();
+setInterval(fn60sec, 60 * 1000);
 
 app.listen(process.env.PORT || 4000);

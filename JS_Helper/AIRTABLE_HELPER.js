@@ -38,6 +38,41 @@ const airtableSearch3 = async (searchField, fieldToSearch, tableToSearch) => {
   }
 };
 
+const airtableSearch4 = async () => {
+  const records = await base('Merchant Records')
+    .select({
+      filterByFormula: `IF({Sub Status},'true')`,
+    })
+    .all();
+  return records;
+};
+
+async function airtableSubstatus() {
+  try {
+    let results = await airtableSearch4();
+    results.forEach((jsdata) => {
+      if (jsdata.fields['Sub Status'] !== 'Call Back') {
+        var updateRecord = {
+          fields: { Status: jsdata.fields['Sub Status'], 'Sub Status': null },
+        };
+        airtableUpdate(updateRecord.fields, jsdata.id, 'Merchant Records');
+      } else if (
+        jsdata.fields[
+          'Sub Status Change Date' < jsdata.fields['Status Change Date']
+        ]
+      ) {
+        var updateRecord = {
+          fields: { 'Sub Status': null },
+        };
+        airtableUpdate(updateRecord.fields, jsdata.id, 'Merchant Records');
+      }
+    });
+    //return results;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 function airtableCreate(data, tableToCreate) {
   base(tableToCreate).create([data], { typecast: true }, (err, record) => {
     if (err) {
@@ -62,6 +97,9 @@ function airtableUpdate(data, record_id, tableToUpdate) {
 module.exports = {
   airtableSearch,
   airtableSearch2,
+  airtableSearch3,
+  airtableSearch4,
+  airtableSubstatus,
   airtableCreate,
   airtableUpdate,
 };
