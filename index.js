@@ -192,7 +192,7 @@ app.get('/api/create', function (req, res) {
                     if (
                       (jsdata.fields['Lead Type (Vehicle)'] =
                         'SEO Lead' &&
-                        jsdata.fields['Created Date'] <
+                        jsdata.fields['Status Change Date (DUPS)'] <
                           moment(Date.now())
                             .subtract(90, 'days')
                             .format('YYYY-MM-DD'))
@@ -239,6 +239,69 @@ app.get('/api/create', function (req, res) {
         });
     });
 });
+
+function Recycle() {
+  airtableHelper.airtableSearch5().then((response) => {
+    response.forEach((jsdata) => {
+      //console.log(jsdata.fields.Status);
+      if (
+        jsdata.fields.Status == 'Submitted' ||
+        jsdata.fields.Status == 'Approved' ||
+        jsdata.fields.Status == 'Contracts out' ||
+        jsdata.fields.Status == 'Contracts In'
+      ) {
+        var data = {
+          MID: jsdata.fields.MID,
+          'Company Name': jsdata.fields['Legal Name'],
+          'First Name': jsdata.fields['Merchant 1 Full Name'],
+          Phone: jsdata.fields['Business Phone'],
+          Email: jsdata.fields['Email 1'],
+        };
+
+        //console.log(jsdata.fields.Assignees);
+
+        if (jsdata.fields.Assignees.includes('recqDyJZU3biJoVoy')) {
+          console.log(jsdata);
+          rico.RicoAppOutDupBlock(jsdata.fields['Business Phone']);
+          const postingto =
+            'https://leads.ricochet.me/api/v1/lead/create/Recycle-Senior?token=1ef9c4efa09e3cb6d9a31a435f711997';
+          rico.RicoPostNewLead(postingto, data).then((response) => {
+            if (response.message != 'Duplicate') {
+              rico.RicoUpdateTag(response.lead_id, 'Recycle Senior API');
+            }
+          });
+        } else {
+          rico.RicoAppOutDupBlock(jsdata.fields['Business Phone']);
+          const postingto =
+            'https://leads.ricochet.me/api/v1/lead/create/Recycle-Seniors?token=1ef9c4efa09e3cb6d9a31a435f711997';
+          rico.RicoPostNewLead(postingto, data).then((response) => {
+            if (response.message != 'Duplicate') {
+              rico.RicoUpdateTag(response.lead_id, 'Recycle Seniors API');
+            }
+          });
+        }
+      } else if (jsdata.fields.Status == 'App Out') {
+        var data = {
+          MID: jsdata.fields.MID,
+          'Company Name': jsdata.fields['Legal Name'],
+          'First Name': jsdata.fields['Merchant 1 Full Name'],
+          Phone: jsdata.fields['Business Phone'],
+          Email: jsdata.fields['Email 1'],
+        };
+        rico.RicoAppOutDupBlock(jsdata.fields['Business Phone']);
+        const postingto =
+          'https://leads.ricochet.me/api/v1/lead/create/Power-Hour?token=1ef9c4efa09e3cb6d9a31a435f711997';
+        rico.RicoPostNewLead(postingto, data).then((response) => {
+          if (response.message != 'Duplicate') {
+            rico.RicoUpdateTag(response.lead_id, 'Power Hour API');
+          }
+        });
+      }
+    });
+  });
+}
+Recycle();
+setInterval(Recycle, 1000 * 60 * 60 * 24);
 
 function fn60sec() {
   airtableHelper.airtableSubstatus();

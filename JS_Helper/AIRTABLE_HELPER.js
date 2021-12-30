@@ -1,3 +1,5 @@
+const moment = require('moment');
+const rico = require('./RICOCHET_HELPER');
 var Airtable = require('airtable'),
   base = new Airtable({ apiKey: 'keyZ0WMDk0n8pJ7yl' }).base(
     'appumwVbyIXggVLmr'
@@ -57,9 +59,8 @@ async function airtableSubstatus() {
         };
         airtableUpdate(updateRecord.fields, jsdata.id, 'Merchant Records');
       } else if (
-        jsdata.fields[
-          'Sub Status Change Date' < jsdata.fields['Status Change Date']
-        ]
+        jsdata.fields['Sub Status Change Date'] <
+        jsdata.fields['Status Change Date']
       ) {
         var updateRecord = {
           fields: { 'Sub Status': null },
@@ -94,11 +95,31 @@ function airtableUpdate(data, record_id, tableToUpdate) {
   });
 }
 
+const airtableSearch5 = async () => {
+  try {
+    const records = await base('Merchant Records')
+      .select({
+        filterByFormula: `DATETIME_DIFF({Status Change Date (DUPS)}, DATEADD(TODAY(),-90,'days'), 'days') = 0`,
+      })
+      .all();
+    return records;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+// var test = moment(Date.now()).format('YYYY-MM-DD');
+// console.log(test);
+// airtableSearch5('{Status Change Date (DUPS)}', test, 'Merchant Records').then(
+//   (response) => console.log(response)
+// );
+
 module.exports = {
   airtableSearch,
   airtableSearch2,
   airtableSearch3,
   airtableSearch4,
+  airtableSearch5,
   airtableSubstatus,
   airtableCreate,
   airtableUpdate,
