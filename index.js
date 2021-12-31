@@ -262,7 +262,6 @@ function Recycle() {
 
         if (jsdata.fields.Assignees.includes('recqDyJZU3biJoVoy')) {
           console.log(jsdata);
-          rico.RicoAppOutDupBlock(jsdata.fields['Business Phone']);
           const postingto =
             'https://leads.ricochet.me/api/v1/lead/create/Recycle-Senior?token=1ef9c4efa09e3cb6d9a31a435f711997';
           rico.RicoPostNewLead(postingto, data).then((response) => {
@@ -271,7 +270,6 @@ function Recycle() {
             }
           });
         } else {
-          rico.RicoAppOutDupBlock(jsdata.fields['Business Phone']);
           const postingto =
             'https://leads.ricochet.me/api/v1/lead/create/Recycle-Seniors?token=1ef9c4efa09e3cb6d9a31a435f711997';
           rico.RicoPostNewLead(postingto, data).then((response) => {
@@ -288,7 +286,6 @@ function Recycle() {
           Phone: jsdata.fields['Business Phone'],
           Email: jsdata.fields['Email 1'],
         };
-        rico.RicoAppOutDupBlock(jsdata.fields['Business Phone']);
         const postingto =
           'https://leads.ricochet.me/api/v1/lead/create/Power-Hour?token=1ef9c4efa09e3cb6d9a31a435f711997';
         rico.RicoPostNewLead(postingto, data).then((response) => {
