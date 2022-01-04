@@ -306,4 +306,9 @@ function fn60sec() {
 fn60sec();
 setInterval(fn60sec, 60 * 1000);
 
+app.post('/RicoTagUpdate', (req, res) => {
+  rico.RicoUpdateTag(req.body.id, req.body.tag);
+  res.sendStatus(200).end();
+});
+
 app.listen(process.env.PORT || 4000);
