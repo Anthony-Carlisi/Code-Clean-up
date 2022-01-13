@@ -62,11 +62,17 @@ filter.addWords(
 );
 
 app.post('/SLS/SMS/origination', (req, res) => {
-  res.status(200).end();
   let phoneNumberFormatted = req.body.phone.slice(2);
-  if (filter.isProfane(req.body.message.body)) {
-    console.log('Profane language found');
+  let message, tag;
+  console.log(req.body);
+  if (req.body.message.type === 3) {
+    tag = 'ConnInc Email Lead';
+    message = req.body.message.body.split('\n')[0].replace(/(\[.*?\])/g, '');
   } else {
+    tag = 'ConnInc SMS Lead';
+    message = req.body.message.body;
+  }
+  if (!filter.isProfane(message)) {
     console.log('No profane language found');
     airtableHelper
       .airtableSearch(
@@ -79,7 +85,7 @@ app.post('/SLS/SMS/origination', (req, res) => {
           console.log('undefined');
           data = {
             fields: {
-              'Customer Response': req.body.message.body,
+              'Customer Response': message,
               Email: req.body.email,
               'Merchant First Name': req.body.first_name,
               'Merchant Last Name': req.body.last_name,
@@ -89,7 +95,7 @@ app.post('/SLS/SMS/origination', (req, res) => {
               'Processing Status': 'New Lead',
               'Tag (Vendor)': req.body.Vendor,
               'Lead Source (iMerchant Lead Source)': req.body['Lead Source'],
-              'Lead Type (Vehicle)': 'SMS Lead',
+              'Lead Type (Vehicle)': tag,
             },
           };
           airtableHelper.airtableCreate(data, 'Inbound Leads');
@@ -97,14 +103,13 @@ app.post('/SLS/SMS/origination', (req, res) => {
           console.log('defined');
           data = {
             'Customer Response':
-              response.fields['Customer Response'] +
-              ' \n ' +
-              req.body.message.body,
+              response.fields['Customer Response'] + ' \n ' + message,
           };
           airtableHelper.airtableUpdate(data, response.id, 'Inbound Leads');
         }
       });
   }
+  res.status(200).end();
 });
 
 app.post('/WP/SMS/origination', (req, res) => {
@@ -135,7 +140,7 @@ app.post('/WP/SMS/origination', (req, res) => {
               'Processing Status': 'New Lead',
               'Tag (Vendor)': req.body.Vendor,
               'Lead Source (iMerchant Lead Source)': req.body['Lead Source'],
-              'Lead Type (Vehicle)': 'SMS We Process',
+              'Lead Type (Vehicle)': 'ConnInc SMS We Process',
             },
           };
           airtableHelper.airtableCreate(data, 'Inbound Leads');
@@ -309,6 +314,87 @@ setInterval(fn60sec, 60 * 1000);
 app.post('/RicoTagUpdate', (req, res) => {
   rico.RicoUpdateTag(req.body.id, req.body.tag);
   res.sendStatus(200).end();
+});
+
+app.post('/SHM/SMS', (req, res) => {
+  if (!filter.isProfane(req.body.message.body)) {
+    mailer.sendNotifications(
+      'sjuaidi@straighthomemortgage.com',
+      `New SHM Positive SMS Response by ${req.body.first_name} ${req.body.last_name} from number ${req.body.phone}`,
+      `First Name: ${req.body.first_name}
+      Last Name: ${req.body.last_name}
+      Phone Number: ${req.body.phone}
+      State: ${req.body.state}
+      City: ${req.body.city}
+      MESSAGE: ${req.body.message.body}`
+    );
+  }
+  res.status(200).end();
+});
+
+app.post('/SHM/EMAIL', (req, res) => {
+  console.log(req.body);
+  let emailBody = req.body.message.body
+    .split('\n')[0]
+    .replace(/(\[.*?\])/g, '');
+  if (!filter.isProfane(emailBody)) {
+    mailer.sendNotifications(
+      'sjuaidi@straighthomemortgage.com',
+      `New SHM Positive Email Response by ${req.body.first_name} ${req.body.last_name} from number ${req.body.phone}`,
+      `First Name: ${req.body.first_name}
+        Last Name: ${req.body.last_name}
+        Phone Number: ${req.body.phone}
+        State: ${req.body.state}
+        City: ${req.body.city}
+        MESSAGE: ${emailBody}`
+    );
+  }
+  res.status(200).end();
+});
+
+app.post('/SMS/ORIGINATION', (req, res) => {
+  console.log(req);
+
+  let phoneNumberFormatted = req.body.From.slice(2);
+  if (!filter.isProfane(req.body.Body)) {
+    console.log('No profane language found');
+    airtableHelper
+      .airtableSearch(
+        phoneNumberFormatted,
+        '{Mobile Phone Formatted}',
+        'Inbound Leads'
+      )
+      .then((response) => {
+        if (response === undefined) {
+          console.log('undefined');
+          data = {
+            fields: {
+              'Customer Response': req.body.Body,
+              //              Email: req.body.email,
+              //              'Merchant First Name': req.body.first_name,
+              //              'Merchant Last Name': req.body.last_name,
+              'Mobile Phone': phoneNumberFormatted,
+              //              'Company Name': req.body.company_name,
+              'Agent Status': 'New Lead',
+              'Processing Status': 'New Lead',
+              //              'Tag (Vendor)': req.body.Vendor,
+              //              'Lead Source (iMerchant Lead Source)': req.body['Lead Source'],
+              'Lead Type (Vehicle)': 'CCoupons SMS Lead',
+            },
+          };
+          airtableHelper.airtableCreate(data, 'Inbound Leads');
+        } else {
+          console.log('defined');
+          data = {
+            'Customer Response':
+              response.fields['Customer Response'] + ' \n ' + req.body.Body,
+          };
+          airtableHelper.airtableUpdate(data, response.id, 'Inbound Leads');
+        }
+      });
+  }
+
+  res.status(200).end();
 });
 
 app.listen(process.env.PORT || 4000);
