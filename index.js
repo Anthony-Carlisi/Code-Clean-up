@@ -302,13 +302,13 @@ function Recycle() {
     });
   });
 }
-Recycle();
+//Recycle();
 setInterval(Recycle, 1000 * 60 * 60 * 24);
 
 function fn60sec() {
   airtableHelper.airtableSubstatus();
 }
-fn60sec();
+//fn60sec();
 setInterval(fn60sec, 60 * 1000);
 
 app.post('/RicoTagUpdate', (req, res) => {
@@ -353,11 +353,16 @@ app.post('/SHM/EMAIL', (req, res) => {
 });
 
 app.post('/SMS/ORIGINATION', (req, res) => {
+  //  console.log(req);
+  // mailer.sendNotifications(
+  //   'irakli@ccoupons.com',
+  //   `API Testing Straight Line Source`,
+  //   JSON.stringify(req.body)
+  // );
   console.log(req);
 
   let phoneNumberFormatted = req.body.From.slice(2);
   if (!filter.isProfane(req.body.Body)) {
-    console.log('No profane language found');
     airtableHelper
       .airtableSearch(
         phoneNumberFormatted,
@@ -366,7 +371,6 @@ app.post('/SMS/ORIGINATION', (req, res) => {
       )
       .then((response) => {
         if (response === undefined) {
-          console.log('undefined');
           data = {
             fields: {
               'Customer Response': req.body.Body,

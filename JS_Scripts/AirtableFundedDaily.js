@@ -116,5 +116,5 @@ async function AirtableFundedDaily() {
     });
 }
 
-AirtableFundedDaily();
+//AirtableFundedDaily();
 module.exports = AirtableFundedDaily;
