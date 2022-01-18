@@ -1,10 +1,5 @@
 #!/usr/bin/env bash
 
-cd $(dirname ${BASH_SOURCE[0]})
+cd /var/opt/Code-Clean-up
 
-if [[ -n $(git status -s) ]]; then
-    echo "Changes found. Pushing changes..."
-    git add -A && git commit -m 'update' && git push
-else
-    echo "No changes found. Skip pushing."
-fi
+git pull https://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@github.com/Anthony-Carlisi/Code-Clean-up.git master
