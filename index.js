@@ -400,6 +400,4 @@ app.post('/SMS/ORIGINATION', (req, res) => {
 
   res.status(200).end();
 });
-
-//Test Change to File
 app.listen(process.env.PORT || 4000);
