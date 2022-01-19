@@ -374,11 +374,11 @@ app.post('/SMS/ORIGINATION', (req, res) => {
           data = {
             fields: {
               'Customer Response': req.body.Body,
-              //              Email: req.body.email,
-              //              'Merchant First Name': req.body.first_name,
-              //              'Merchant Last Name': req.body.last_name,
+              Email: req.body.extraDATA.email,
+              'Merchant First Name': req.body.extraDATA.firstName,
+              'Merchant Last Name': req.body.extraDATA.lastName,
               'Mobile Phone': phoneNumberFormatted,
-              //              'Company Name': req.body.company_name,
+              'Company Name': req.body.extraDATA.businessName,
               'Agent Status': 'New Lead',
               'Processing Status': 'New Lead',
               //              'Tag (Vendor)': req.body.Vendor,
