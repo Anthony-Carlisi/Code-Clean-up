@@ -401,9 +401,4 @@ app.post('/SMS/ORIGINATION', (req, res) => {
   res.status(200).end();
 });
 
-//Test Commit Here
-//Erick Test
-//Erick Test 2
-//This is update from github.com
-
 app.listen(process.env.PORT || 4000);
