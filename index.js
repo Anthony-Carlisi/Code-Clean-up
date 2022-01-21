@@ -381,9 +381,10 @@ app.post('/SMS/ORIGINATION', (req, res) => {
               'Company Name': req.body.extraDATA.businessName,
               'Agent Status': 'New Lead',
               'Processing Status': 'New Lead',
-              //              'Tag (Vendor)': req.body.Vendor,
-              //              'Lead Source (iMerchant Lead Source)': req.body['Lead Source'],
-              // Remember to add "Purchase Date"
+              'Tag (Vendor)': req.body.extraDATA.vendor,
+              'Lead Source (iMerchant Lead Source)':
+                req.body.extraDATA.leadSource,
+              'Lead Purchase Date': req.body.extraDATA.uploadDate,
               'Lead Type (Vehicle)': 'CCoupons SMS Lead',
             },
           };
