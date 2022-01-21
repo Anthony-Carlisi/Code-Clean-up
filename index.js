@@ -384,7 +384,7 @@ app.post('/SMS/ORIGINATION', (req, res) => {
               'Tag (Vendor)': req.body.extraDATA.vendor,
               'Lead Source (iMerchant Lead Source)':
                 req.body.extraDATA.leadSource,
-              'Lead Purchase Date': req.body.extraDATA.uploadDate,
+              'Purchase Date': req.body.extraDATA.uploadDate,
               'Lead Type (Vehicle)': 'CCoupons SMS Lead',
             },
           };
