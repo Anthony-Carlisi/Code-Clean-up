@@ -390,12 +390,27 @@ app.post('/SMS/ORIGINATION', (req, res) => {
           };
           airtableHelper.airtableCreate(data, 'Inbound Leads');
         } else {
-          console.log('defined');
           data = {
-            'Customer Response':
-              response.fields['Customer Response'] + ' \n ' + req.body.Body,
+            fields: {
+              'Customer Response': req.body.Body,
+              Email: req.body.extraDATA.email,
+              'Merchant First Name': req.body.extraDATA.firstName,
+              'Merchant Last Name': req.body.extraDATA.lastName,
+              'Mobile Phone': phoneNumberFormatted,
+              'Company Name': req.body.extraDATA.businessName,
+              'Agent Status': 'New Lead',
+              'Processing Status': 'New Lead',
+              'Tag (Vendor)': req.body.extraDATA.vendor,
+              'Lead Source (iMerchant Lead Source)':
+                req.body.extraDATA.leadSource,
+              'Purchase Date': new Date(req.body.extraDATA.uploadDate),
+              'Lead Type (Vehicle)': 'CCoupons SMS Lead',
+              'Primary Asignee': response.fields['Primary Asignee'],
+            },
           };
-          airtableHelper.airtableUpdate(data, response.id, 'Inbound Leads');
+
+          console.log('defined');
+          airtableHelper.airtableCreate(data, 'Inbound Leads');
         }
       });
   }
