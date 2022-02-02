@@ -315,11 +315,13 @@ function fn60sec() {
 //fn60sec();
 setInterval(fn60sec, 60 * 1000);
 
+//UPDATE RICOCHET TAG
 app.post('/RicoTagUpdate', (req, res) => {
   rico.RicoUpdateTag(req.body.id, req.body.tag);
   res.sendStatus(200).end();
 });
 
+//SEND SHM SMS RESPONSE TO SARAH
 app.post('/SHM/SMS', (req, res) => {
   if (!filter.isProfane(req.body.message.body)) {
     mailer.sendNotifications(
@@ -336,6 +338,7 @@ app.post('/SHM/SMS', (req, res) => {
   res.status(200).end();
 });
 
+//SEND SHM EMAIL RESPONSE TO SARAH
 app.post('/SHM/EMAIL', (req, res) => {
   console.log(req.body);
   let emailBody = req.body.message.body
@@ -356,6 +359,7 @@ app.post('/SHM/EMAIL', (req, res) => {
   res.status(200).end();
 });
 
+//ADD CCoupons LEADS TO INBOUND LEADS
 app.post('/SMS/ORIGINATION', (req, res) => {
   //  console.log(req);
   // mailer.sendNotifications(
@@ -368,13 +372,13 @@ app.post('/SMS/ORIGINATION', (req, res) => {
   let phoneNumberFormatted = req.body.From.slice(2);
   if (!filter.isProfane(req.body.Body)) {
     airtableHelper
-      .airtableSearch(
+      .airtableSearch( //search AT
         phoneNumberFormatted,
         '{Mobile Phone Formatted}',
         'Inbound Leads'
       )
       .then((response) => {
-        if (response === undefined) {
+        if (response === undefined) { //if number not found in Inbound Leads then create new as "CCoupons SMS Lead"
           data = {
             fields: {
               'Customer Response': req.body.Body,
@@ -393,7 +397,9 @@ app.post('/SMS/ORIGINATION', (req, res) => {
             },
           };
           airtableHelper.airtableCreate(data, 'Inbound Leads');
-        } else {
+
+        } else { // if number already in Inbound Leads append "Customer Response" on new line
+          console.log('defined');
           data = {
             fields: {
               'Customer Response': req.body.Body,
