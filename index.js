@@ -164,7 +164,7 @@ app.get('/api/create', function (req, res) {
   var cleanedLead = {};
   cleanedLead.fields = req.query;
   cleanedLead.fields['Lead Source'] = cleanedLead.fields['Lead Source'].replace(
-    /-/,
+    /-/g,
     ' '
   );
   airtableHelper
@@ -372,13 +372,15 @@ app.post('/SMS/ORIGINATION', (req, res) => {
   let phoneNumberFormatted = req.body.From.slice(2);
   if (!filter.isProfane(req.body.Body)) {
     airtableHelper
-      .airtableSearch( //search AT
+      .airtableSearch(
+        //search AT
         phoneNumberFormatted,
         '{Mobile Phone Formatted}',
         'Inbound Leads'
       )
       .then((response) => {
-        if (response === undefined) { //if number not found in Inbound Leads then create new as "CCoupons SMS Lead"
+        if (response === undefined) {
+          //if number not found in Inbound Leads then create new as "CCoupons SMS Lead"
           data = {
             fields: {
               'Customer Response': req.body.Body,
@@ -397,8 +399,8 @@ app.post('/SMS/ORIGINATION', (req, res) => {
             },
           };
           airtableHelper.airtableCreate(data, 'Inbound Leads');
-
-        } else { // if number already in Inbound Leads append "Customer Response" on new line
+        } else {
+          // if number already in Inbound Leads append "Customer Response" on new line
           console.log('defined');
           data = {
             fields: {
