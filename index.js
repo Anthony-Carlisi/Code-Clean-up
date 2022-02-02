@@ -163,6 +163,10 @@ app.get('/api/create', function (req, res) {
   req.query['Business Phone'] = req.query['Business Phone'].slice(1);
   var cleanedLead = {};
   cleanedLead.fields = req.query;
+  cleanedLead.fields['Lead Source'] = cleanedLead.fields['Lead Source'].replace(
+    /-/,
+    ' '
+  );
   airtableHelper
     .airtableSearch2(
       req.query['Business Phone'],
