@@ -275,7 +275,7 @@ function Recycle() {
             'https://leads.ricochet.me/api/v1/lead/create/Recycle-Senior?token=1ef9c4efa09e3cb6d9a31a435f711997';
           rico.RicoPostNewLead(postingto, data).then((response) => {
             if (response.message != 'Duplicate') {
-              rico.RicoUpdateTag(response.lead_id, 'Recycle Senior API');
+              rico.RicoUpdateTag(response.lead_id, 'Recycle Senior');
             }
           });
         } else {
@@ -283,7 +283,7 @@ function Recycle() {
             'https://leads.ricochet.me/api/v1/lead/create/Recycle-Seniors?token=1ef9c4efa09e3cb6d9a31a435f711997';
           rico.RicoPostNewLead(postingto, data).then((response) => {
             if (response.message != 'Duplicate') {
-              rico.RicoUpdateTag(response.lead_id, 'Recycle Seniors API');
+              rico.RicoUpdateTag(response.lead_id, 'Recycle Seniors');
             }
           });
         }
@@ -299,7 +299,7 @@ function Recycle() {
           'https://leads.ricochet.me/api/v1/lead/create/Power-Hour?token=1ef9c4efa09e3cb6d9a31a435f711997';
         rico.RicoPostNewLead(postingto, data).then((response) => {
           if (response.message != 'Duplicate') {
-            rico.RicoUpdateTag(response.lead_id, 'Power Hour API');
+            rico.RicoUpdateTag(response.lead_id, 'Power Hour');
           }
         });
       }
