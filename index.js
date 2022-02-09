@@ -165,6 +165,10 @@ app.get('/api/create', function (req, res) {
   req.query['Business Phone'] = req.query['Business Phone'].slice(1);
   var cleanedLead = {};
   cleanedLead.fields = req.query;
+  cleanedLead.fields['Lead Source'] = cleanedLead.fields['Lead Source'].replace(
+    /-/g,
+    ' '
+  );
   airtableHelper
     .airtableSearch2(
       req.query['Business Phone'],
@@ -273,7 +277,7 @@ function Recycle() {
             'https://leads.ricochet.me/api/v1/lead/create/Recycle-Senior?token=1ef9c4efa09e3cb6d9a31a435f711997';
           rico.RicoPostNewLead(postingto, data).then((response) => {
             if (response.message != 'Duplicate') {
-              rico.RicoUpdateTag(response.lead_id, 'Recycle Senior API');
+              rico.RicoUpdateTag(response.lead_id, 'Recycle Senior');
             }
           });
         } else {
@@ -281,7 +285,7 @@ function Recycle() {
             'https://leads.ricochet.me/api/v1/lead/create/Recycle-Seniors?token=1ef9c4efa09e3cb6d9a31a435f711997';
           rico.RicoPostNewLead(postingto, data).then((response) => {
             if (response.message != 'Duplicate') {
-              rico.RicoUpdateTag(response.lead_id, 'Recycle Seniors API');
+              rico.RicoUpdateTag(response.lead_id, 'Recycle Seniors');
             }
           });
         }
@@ -297,7 +301,7 @@ function Recycle() {
           'https://leads.ricochet.me/api/v1/lead/create/Power-Hour?token=1ef9c4efa09e3cb6d9a31a435f711997';
         rico.RicoPostNewLead(postingto, data).then((response) => {
           if (response.message != 'Duplicate') {
-            rico.RicoUpdateTag(response.lead_id, 'Power Hour API');
+            rico.RicoUpdateTag(response.lead_id, 'Power Hour');
           }
         });
       }
@@ -370,13 +374,15 @@ app.post('/SMS/ORIGINATION', (req, res) => {
   let phoneNumberFormatted = req.body.From.slice(2);
   if (!filter.isProfane(req.body.Body)) {
     airtableHelper
-      .airtableSearch( //search AT
+      .airtableSearch(
+        //search AT
         phoneNumberFormatted,
         '{Mobile Phone Formatted}',
         'Inbound Leads'
       )
       .then((response) => {
-        if (response === undefined) { //if number not found in Inbound Leads then create new as "CCoupons SMS Lead"
+        if (response === undefined) {
+          //if number not found in Inbound Leads then create new as "CCoupons SMS Lead"
           data = {
             fields: {
               'Customer Response': req.body.Body,
@@ -395,8 +401,8 @@ app.post('/SMS/ORIGINATION', (req, res) => {
             },
           };
           airtableHelper.airtableCreate(data, 'Inbound Leads');
-
-        } else { // if number already in Inbound Leads append "Customer Response" on new line
+        } else {
+          // if number already in Inbound Leads append "Customer Response" on new line
           console.log('defined');
           data = {
             fields: {
