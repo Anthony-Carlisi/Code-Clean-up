@@ -61,6 +61,7 @@ filter.addWords(
   "Don't Bother"
 );
 
+//Add
 app.post('/SLS/SMS/origination', (req, res) => {
   let phoneNumberFormatted = req.body.phone.slice(2);
   let message, tag;
@@ -69,7 +70,7 @@ app.post('/SLS/SMS/origination', (req, res) => {
     tag = 'ConnInc Email Lead';
     message = req.body.message.body.split('\n')[0].replace(/(\[.*?\])/g, '');
   } else {
-    tag = 'ConnInc SMS Lead';
+    tag = 'Origination #1';
     message = req.body.message.body;
   }
   if (!filter.isProfane(message)) {
@@ -113,6 +114,7 @@ app.post('/SLS/SMS/origination', (req, res) => {
 });
 
 app.post('/WP/SMS/origination', (req, res) => {
+  console.log(req)
   res.status(200).end();
   let phoneNumberFormatted = req.body.phone.slice(2);
   if (filter.isProfane(req.body.message.body)) {
@@ -252,7 +254,7 @@ function Recycle() {
       if (
         jsdata.fields.Status == 'Submitted' ||
         jsdata.fields.Status == 'Approved' ||
-        jsdata.fields.Status == 'Contracts out' ||
+        jsdata.fields.Status == 'Contracts Out' ||
         jsdata.fields.Status == 'Contracts In'
       ) {
         var data = {
@@ -265,7 +267,7 @@ function Recycle() {
 
         //console.log(jsdata.fields.Assignees);
 
-        if (jsdata.fields.Assignees.includes('recqDyJZU3biJoVoy')) {
+        if (jsdata.fields.Assignees.includes('recqDyJZU3biJoVoy')) { //if Joe Davino is included
           console.log(jsdata);
           const postingto =
             'https://leads.ricochet.me/api/v1/lead/create/Recycle-Senior?token=1ef9c4efa09e3cb6d9a31a435f711997';
