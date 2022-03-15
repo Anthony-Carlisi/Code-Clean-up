@@ -10,9 +10,9 @@ const express = require('express'),
   mailer = require('./JS_Helper/EMAIL_NOTIFICATION'),
   //Scripts
 
-  app = express()
+  app = express();
 
-app.use(bodyParser.json())
+app.use(bodyParser.json());
 
 filter.addWords(
   'not interested',
@@ -59,45 +59,43 @@ filter.addWords(
   'wrong number',
   'we never spoke',
   "Don't Bother"
-)
+);
 
 //SLS Origination
 app.post('/SLS/SMS/origination', (req, res) => {
-  let phoneNumberFormatted = req.body.phone.slice(2)
-  let message, tag
-
+  let phoneNumberFormatted = req.body.phone.slice(2);
+  let message, tag;
+ 
   let assignees = [],
-    campaignName = req.body.campaign.name
-  console.log(req.body)
+  campaignName = req.body.campaign.name;
+  console.log(req.body);
 
   //set message variable based on type
   if (req.body.message.type === 3) {
-    message = req.body.message.body.split('\n')[0].replace(/(\[.*?\])/g, '')
+    message = req.body.message.body.split('\n')[0].replace(/(\[.*?\])/g, '');
   } else {
     message = req.body.message.body
   }
 
   //add Dan and Richard as the default assignees
-  if (campaignName == 'Origination DR') {
-    assignees = [{ name: 'Daniel McBride' }, { name: 'Richard Delrosario' }]
+  if (campaignName == "Origination DR") {
+    assignees = [{name: "Daniel McBride"}, {name: "Richard Delrosario"}];
   }
 
   //tag equals campaign name
-  tag = campaignName
+  tag = campaignName;
 
   if (!filter.isProfane(message)) {
-    console.log('No profane language found')
+    console.log('No profane language found');
     airtableHelper
-      .airtableSearch(
-        //search Inbound Leads by Phone Number
+      .airtableSearch( //search Inbound Leads by Phone Number
         phoneNumberFormatted,
         '{Mobile Phone Formatted}',
         'Inbound Leads'
       )
       .then((response) => {
-        if (response === undefined) {
-          //if no record found then create Inbound Lead with customer response
-          console.log('undefined')
+        if (response === undefined) { //if no record found then create Inbound Lead with customer response
+          console.log('undefined');
           data = {
             fields: {
               'Customer Response': message,
@@ -111,13 +109,12 @@ app.post('/SLS/SMS/origination', (req, res) => {
               'Tag (Vendor)': req.body.Vendor,
               'Lead Source (iMerchant Lead Source)': req.body['Lead Source'],
               'Lead Type (Vehicle)': tag,
-              'Primary Asignee': assignees,
+              'Primary Asignee': assignees
             },
-          }
-          airtableHelper.airtableCreate(data, 'Inbound Leads')
-        } else {
-          //if already in Inbound Leads create new Inbound Lead with
-          console.log('defined')
+          };
+          airtableHelper.airtableCreate(data, 'Inbound Leads');
+        } else { //if already in Inbound Leads create new Inbound Lead with
+          console.log('defined');
           data = {
             fields: {
               'Customer Response': message,
@@ -131,25 +128,25 @@ app.post('/SLS/SMS/origination', (req, res) => {
               'Tag (Vendor)': req.body.Vendor,
               'Lead Source (iMerchant Lead Source)': req.body['Lead Source'],
               'Lead Type (Vehicle)': tag,
-              'Primary Asignee': response.fields['Primary Asignee'],
+              'Primary Asignee': response.fields['Primary Asignee']
             },
-          }
-          airtableHelper.airtableCreate(data, 'Inbound Leads')
+          };
+          airtableHelper.airtableCreate(data, 'Inbound Leads');
         }
-      })
+      });
   }
-  res.status(200).end()
-})
+  res.status(200).end();
+});
 
 //WeProcess Origination
 app.post('/WP/SMS/origination', (req, res) => {
   console.log(req)
-  res.status(200).end()
-  let phoneNumberFormatted = req.body.phone.slice(2)
+  res.status(200).end();
+  let phoneNumberFormatted = req.body.phone.slice(2);
   if (filter.isProfane(req.body.message.body)) {
-    console.log('Profane language found')
+    console.log('Profane language found');
   } else {
-    console.log('No profane language found')
+    console.log('No profane language found');
     airtableHelper
       .airtableSearch3(
         phoneNumberFormatted,
@@ -158,7 +155,7 @@ app.post('/WP/SMS/origination', (req, res) => {
       )
       .then((response) => {
         if (response === undefined) {
-          console.log('undefined')
+          console.log('undefined');
           data = {
             fields: {
               'Customer Response': req.body.message.body,
@@ -173,27 +170,27 @@ app.post('/WP/SMS/origination', (req, res) => {
               'Lead Source (iMerchant Lead Source)': req.body['Lead Source'],
               'Lead Type (Vehicle)': 'ConnInc SMS We Process',
             },
-          }
-          airtableHelper.airtableCreate(data, 'Inbound Leads')
+          };
+          airtableHelper.airtableCreate(data, 'Inbound Leads');
         } else {
-          console.log('defined')
+          console.log('defined');
           data = {
             'Customer Response':
               response.fields['Customer Response'] +
               ' \n ' +
               req.body.message.body,
-          }
-          airtableHelper.airtableUpdate(data, response.id, 'Inbound Leads')
+          };
+          airtableHelper.airtableUpdate(data, response.id, 'Inbound Leads');
         }
-      })
+      });
   }
-})
+});
 // Initial Breadcrumb URL
 app.get('/api/create', function (req, res) {
   // Remove 1 from Phone Number EX (1)5163034649
-  req.query['Business Phone'] = req.query['Business Phone'].slice(1)
-  var cleanedLead = {}
-  cleanedLead.fields = req.query
+  req.query['Business Phone'] = req.query['Business Phone'].slice(1);
+  var cleanedLead = {};
+  cleanedLead.fields = req.query;
   airtableHelper
     .airtableSearch2(
       req.query['Business Phone'],
@@ -202,10 +199,10 @@ app.get('/api/create', function (req, res) {
     )
     .then((merchantRecords) => {
       airtableHelper
-        .airtableSearch22(req.query.Assignees, '{Email}', 'Agent Table')
+        .airtableSearch2(req.query.Assignees, '{Email}', 'Agent Table')
         .then((userInfo) => {
-          //console.log(userInfo)
-          req.query.Assignees = userInfo[0].fields.Name
+          console.log(userInfo);
+          req.query.Assignees = userInfo[0].fields.Name;
           if (!merchantRecords.length) {
             airtableHelper
               .airtableSearch2(
@@ -215,78 +212,66 @@ app.get('/api/create', function (req, res) {
               )
               .then((inbound) => {
                 if (!merchantRecords.length) {
-                  airtableHelper.airtableCreate(cleanedLead, 'Merchant Records')
-                  res.send(`New Lead Created`)
+                  airtableHelper.airtableCreate(
+                    cleanedLead,
+                    'Merchant Records'
+                  );
+                  res.send(`New Lead Created`);
                   rico
                     .RicoAppOutDupBlock(req.query['Business Phone'])
-                    .then((response) => console.log(response))
-                    .catch((error) => {
-                      console.log(error)
-                    })
+                    .then((response) => console.log(response));
                 } else {
                   for (jsdata of inbound) {
                     if (
                       (jsdata.fields['Lead Type (Vehicle)'] =
                         'SEO Lead' &&
                         jsdata.fields['Status Change Date (DUPS)'] <
-                          moment(Date.now())
-                            .subtract(90, 'days')
-                            .format('YYYY-MM-DD'))
+                        moment(Date.now())
+                          .subtract(90, 'days')
+                          .format('YYYY-MM-DD'))
                     ) {
-                      res.send(`This Lead is a Dup Block`)
+                      res.send(`This Lead is a Dup Block`);
                     } else {
                       airtableHelper.airtableCreate(
                         cleanedLead,
                         'Merchant Records'
-                      )
-                      res.send(`New Lead Created`)
+                      );
+                      res.send(`New Lead Created`);
                       rico
                         .RicoAppOutDupBlock(req.query['Business Phone'])
-                        .then((response) => console.log(response))
-                        .catch((error) => {
-                          console.log(error)
-                        })
+                        .then((response) => console.log(response));
                     }
                   }
                 }
-              })
-              .catch((error) => {
-                console.log(error)
-              })
+              });
           } else {
             for (jsdata of merchantRecords) {
               if (jsdata.fields.Assignees.includes(userInfo[0].id)) {
                 res.send(
                   `This is already your deal please refer to MID ${jsdata.fields.MID}`
-                )
-                break
+                );
+                break;
               }
             }
             for (jsdata of merchantRecords) {
               if (
                 jsdata.fields.Status === 'Funded' ||
-                jsdata.fields['Status Change Date (DUPS)'] >
-                  moment(Date.now()).subtract(90, 'days').format('YYYY-MM-DD')
+                jsdata.fields['Status Change Date'] >
+                moment(Date.now()).subtract(90, 'days').format('YYYY-MM-DD')
               ) {
-                res.send(`This Lead is a Dup Block`)
+                res.send(`This Lead is a Dup Block`);
               } else {
                 airtableHelper
                   .airtableUpdate(cleanedLead, jsdata.id, 'Merchant Records')
                   .then((response) => {
-                    res.send(`Lead Reassigned to you ${response.fields.MID}`)
-                  })
-                  .catch((error) => {
-                    console.log(error)
-                  })
+                    res.send(`Lead Reassignee to you ${response.fields.MID}`);
+                  });
               }
             }
           }
-        })
-        .catch((error) => {
-          console.log(error)
-        })
-    })
-})
+        });
+    });
+});
 
 function Recycle() {
   airtableHelper.airtableSearch5().then((response) => {
@@ -304,28 +289,27 @@ function Recycle() {
           'First Name': jsdata.fields['Merchant 1 Full Name'],
           Phone: jsdata.fields['Business Phone'],
           Email: jsdata.fields['Email 1'],
-        }
+        };
 
         //console.log(jsdata.fields.Assignees);
 
-        if (jsdata.fields.Assignees.includes('recqDyJZU3biJoVoy')) {
-          //if Joe Davino is included
-          console.log(jsdata)
+        if (jsdata.fields.Assignees.includes('recqDyJZU3biJoVoy')) { //if Joe Davino is included
+          console.log(jsdata);
           const postingto =
-            'https://leads.ricochet.me/api/v1/lead/create/Recycle-Senior?token=1ef9c4efa09e3cb6d9a31a435f711997'
+            'https://leads.ricochet.me/api/v1/lead/create/Recycle-Senior?token=1ef9c4efa09e3cb6d9a31a435f711997';
           rico.RicoPostNewLead(postingto, data).then((response) => {
             if (response.message != 'Duplicate') {
-              rico.RicoUpdateTag(response.lead_id, 'Recycle Senior API')
+              rico.RicoUpdateTag(response.lead_id, 'Recycle Senior API');
             }
-          })
+          });
         } else {
           const postingto =
-            'https://leads.ricochet.me/api/v1/lead/create/Recycle-Seniors?token=1ef9c4efa09e3cb6d9a31a435f711997'
+            'https://leads.ricochet.me/api/v1/lead/create/Recycle-Seniors?token=1ef9c4efa09e3cb6d9a31a435f711997';
           rico.RicoPostNewLead(postingto, data).then((response) => {
             if (response.message != 'Duplicate') {
-              rico.RicoUpdateTag(response.lead_id, 'Recycle Seniors API')
+              rico.RicoUpdateTag(response.lead_id, 'Recycle Seniors API');
             }
-          })
+          });
         }
       } else if (jsdata.fields.Status == 'App Out') {
         var data = {
@@ -334,32 +318,32 @@ function Recycle() {
           'First Name': jsdata.fields['Merchant 1 Full Name'],
           Phone: jsdata.fields['Business Phone'],
           Email: jsdata.fields['Email 1'],
-        }
+        };
         const postingto =
-          'https://leads.ricochet.me/api/v1/lead/create/Power-Hour?token=1ef9c4efa09e3cb6d9a31a435f711997'
+          'https://leads.ricochet.me/api/v1/lead/create/Power-Hour?token=1ef9c4efa09e3cb6d9a31a435f711997';
         rico.RicoPostNewLead(postingto, data).then((response) => {
           if (response.message != 'Duplicate') {
-            rico.RicoUpdateTag(response.lead_id, 'Power Hour API')
+            rico.RicoUpdateTag(response.lead_id, 'Power Hour API');
           }
-        })
+        });
       }
-    })
-  })
+    });
+  });
 }
 //Recycle();
-setInterval(Recycle, 1000 * 60 * 60 * 24) //every 24 hours
+setInterval(Recycle, 1000 * 60 * 60 * 24); //every 24 hours
 
 function fn60sec() {
-  airtableHelper.airtableSubstatus()
+  airtableHelper.airtableSubstatus();
 }
 //fn60sec();
-setInterval(fn60sec, 60 * 1000) //every minute
+setInterval(fn60sec, 60 * 1000); //every minute
 
 //UPDATE RICOCHET TAG
 app.post('/RicoTagUpdate', (req, res) => {
-  rico.RicoUpdateTag(req.body.id, req.body.tag)
-  res.sendStatus(200).end()
-})
+  rico.RicoUpdateTag(req.body.id, req.body.tag);
+  res.sendStatus(200).end();
+});
 
 //SEND SHM SMS RESPONSE TO SARAH
 app.post('/SHM/SMS', (req, res) => {
@@ -373,15 +357,17 @@ app.post('/SHM/SMS', (req, res) => {
       State: ${req.body.state}
       City: ${req.body.city}
       MESSAGE: ${req.body.message.body}`
-    )
+    );
   }
-  res.status(200).end()
-})
+  res.status(200).end();
+});
 
 //SEND SHM EMAIL RESPONSE TO SARAH
 app.post('/SHM/EMAIL', (req, res) => {
-  console.log(req.body)
-  let emailBody = req.body.message.body.split('\n')[0].replace(/(\[.*?\])/g, '')
+  console.log(req.body);
+  let emailBody = req.body.message.body
+    .split('\n')[0]
+    .replace(/(\[.*?\])/g, '');
   if (!filter.isProfane(emailBody)) {
     mailer.sendNotifications(
       'sjuaidi@straighthomemortgage.com',
@@ -392,10 +378,10 @@ app.post('/SHM/EMAIL', (req, res) => {
         State: ${req.body.state}
         City: ${req.body.city}
         MESSAGE: ${emailBody}`
-    )
+    );
   }
-  res.status(200).end()
-})
+  res.status(200).end();
+});
 
 //ADD CCoupons LEADS TO INBOUND LEADS
 app.post('/SMS/ORIGINATION', (req, res) => {
@@ -405,20 +391,18 @@ app.post('/SMS/ORIGINATION', (req, res) => {
   //   `API Testing Straight Line Source`,
   //   JSON.stringify(req.body)
   // );
-  console.log(req)
+  console.log(req);
 
-  let phoneNumberFormatted = req.body.From.slice(2)
+  let phoneNumberFormatted = req.body.From.slice(2);
   if (!filter.isProfane(req.body.Body)) {
     airtableHelper
-      .airtableSearch(
-        //search AT
+      .airtableSearch( //search AT
         phoneNumberFormatted,
         '{Mobile Phone Formatted}',
         'Inbound Leads'
       )
       .then((response) => {
-        if (response === undefined) {
-          //if number not found in Inbound Leads then create new as "CCoupons SMS Lead"
+        if (response === undefined) { //if number not found in Inbound Leads then create new as "CCoupons SMS Lead"
           data = {
             fields: {
               'Customer Response': req.body.Body,
@@ -435,11 +419,11 @@ app.post('/SMS/ORIGINATION', (req, res) => {
               'Purchase Date': new Date(req.body.extraDATA.uploadDate),
               'Lead Type (Vehicle)': 'CCoupons SMS Lead',
             },
-          }
-          airtableHelper.airtableCreate(data, 'Inbound Leads')
-        } else {
-          // if number already in Inbound Leads append "Customer Response" on new line
-          console.log('defined')
+          };
+          airtableHelper.airtableCreate(data, 'Inbound Leads');
+
+        } else { // if number already in Inbound Leads append "Customer Response" on new line
+          console.log('defined');
           data = {
             fields: {
               'Customer Response': req.body.Body,
@@ -457,15 +441,15 @@ app.post('/SMS/ORIGINATION', (req, res) => {
               'Lead Type (Vehicle)': 'CCoupons SMS Lead',
               'Primary Asignee': response.fields['Primary Asignee'],
             },
-          }
+          };
 
-          console.log('defined')
-          airtableHelper.airtableCreate(data, 'Inbound Leads')
+          console.log('defined');
+          airtableHelper.airtableCreate(data, 'Inbound Leads');
         }
-      })
+      });
   }
 
-  res.status(200).end()
-})
+  res.status(200).end();
+});
 
-app.listen(process.env.PORT || 4000)
+app.listen(process.env.PORT || 4000);
