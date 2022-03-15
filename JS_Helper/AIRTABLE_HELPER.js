@@ -19,7 +19,7 @@ const airtableSearch = async (searchField, fieldToSearch, tableToSearch) => {
 const airtableSearch2 = async (searchField, fieldToSearch, tableToSearch) => {
   const records = await base(tableToSearch)
     .select({
-      filterByFormula: `AND(${fieldToSearch} = "${searchField}", {Status Change Date (DUPS)} < DATEADD(TODAY(),-40,'days'))`,
+      filterByFormula: `${fieldToSearch} = "${searchField}"`,
     })
     .all()
   return records
