@@ -208,7 +208,7 @@ app.get('/api/create', function (req, res) {
           req.query.Assignees = userInfo[0].fields.Name
           if (!merchantRecords.length) {
             airtableHelper
-              .airtableSearch(
+              .airtableSearch22(
                 req.query['Business Phone'],
                 '{Mobile Phone Formatted}',
                 'Inbound Leads'
