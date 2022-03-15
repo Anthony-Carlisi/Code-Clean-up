@@ -19,11 +19,24 @@ const airtableSearch = async (searchField, fieldToSearch, tableToSearch) => {
 const airtableSearch2 = async (searchField, fieldToSearch, tableToSearch) => {
   const records = await base(tableToSearch)
     .select({
-      filterByFormula: `AND(${fieldToSearch} = "${searchField}", {Status Change Date (DUPS)} < DATEADD(TODAY(),-40,'days'))`,
+      filterByFormula: `AND(SEARCH(${fieldToSearch}, '${searchField}' & ""), {Status Change Date (DUPS)} < DATEADD(TODAY(),-40,'days'))`,
     })
     .all()
   return records
 }
+
+const airtableSearch22 = async (searchField, fieldToSearch, tableToSearch) => {
+  const records = await base(tableToSearch)
+    .select({
+      filterByFormula: `${fieldToSearch} = "${searchField}"`,
+    })
+    .all()
+  return records
+}
+
+// airtableSearch2(2072134105, '{Business Phone Text}', 'Merchant Records').then(
+//   (response) => console.log(response)
+// )
 
 const airtableSearch3 = async (searchField, fieldToSearch, tableToSearch) => {
   const records = await base(tableToSearch)
@@ -121,4 +134,5 @@ module.exports = {
   airtableSubstatus,
   airtableCreate,
   airtableUpdate,
+  airtableSearch22,
 }
