@@ -12,7 +12,7 @@ const express = require('express'),
 
 const app = express()
 
-app.use(bodyParser.json())
+//app.use(bodyParser.json())
 app.use(express.json({ extended: false }))
 app.use('/api/create', require('./routes/api/create'))
 
@@ -371,4 +371,4 @@ app.post('/SMS/ORIGINATION', (req, res) => {
   res.status(200).end()
 })
 
-app.listen(process.env.PORT || 4000)
+app.listen(process.env.PORT || 5000)
