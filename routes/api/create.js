@@ -137,7 +137,7 @@ router.get('/', async (req, res) => {
 
     // Assign Lead Source Id to leadSource
     if (leadSourceSearch?.length > 0) {
-      leadSource = leadSourceSearch[0].id
+      leadSource = [leadSourceSearch[0].id]
     } else {
       // if no lead source found default to Undefined
       leadSource = ['recD8X2Wc4ey8SVZT']
@@ -155,7 +155,7 @@ router.get('/', async (req, res) => {
       'Business Zip': zip,
       'Business City': city,
       'Business State': state,
-      'Lead Source': [leadSource],
+      'Lead Source': leadSource,
       // ID for Dialer
       'Marketing Method': ['rec8xeFAHTpPr6tYs'],
       'Merchant 1 Full Name': `${firstName} ${lastName}`,
