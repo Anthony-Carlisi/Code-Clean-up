@@ -136,7 +136,12 @@ router.get('/', async (req, res) => {
     )
 
     // Assign Lead Source Id to leadSource
-    leadSource = leadSourceSearch[0].id
+    if (leadSourceSearch?.length > 0) {
+      leadSource = leadSourceSearch[0].id
+    } else {
+      // if no lead source found default to Undefined
+      leadSource = ['recD8X2Wc4ey8SVZT']
+    }
 
     //  Create Object to send to Airtable
     const airtableLead = {
@@ -177,7 +182,7 @@ router.get('/', async (req, res) => {
 
     airtableCreate('Merchant Records', airtableLead)
 
-    res.json(`New Lead Created`)
+    res.send(`New Lead Created`)
   } catch (err) {
     console.error(err.message)
     res.status(500).send('Server Error')
