@@ -18,19 +18,13 @@ var storage = multer.diskStorage({
 })
 
 const base = new Airtable({ apiKey: config.get('airtableApiKey') }).base(
-  config.get('airtableBase')
+  config.get('scrubbingBase')
 )
 const uploadFile = multer({ storage: storage })
 
-const airtableSearch = async (table, scrubbingView) => {
+const airtableSearch = async (table) => {
   try {
-    const records = await base(table)
-      .select({
-        //Change filter params
-        //filterByFormula: filterFormula,
-        view: scrubbingView,
-      })
-      .all()
+    const records = await base(table).select().all()
     return records
   } catch (error) {
     console.log(error)
@@ -42,30 +36,30 @@ const airtableSearch = async (table, scrubbingView) => {
 // @access  Private
 router.post('/', uploadFile.single('file'), async (req, res) => {
   try {
-    let phoneHeader
-    let emailHeader
+    let sendToEmail = req.body.sendToEmail
+    let emailHeader //name of header field (just has to include the word 'email')
     let headerFields = []
-    //Gets
+
+    //CSV to JSON
     const csvData = await csv()
       .fromFile(req.file.path)
       .on('header', (headers) => {
-        headerFields = headers
-        phoneHeader = headers.find((element) => {
-          if (element.includes('phone')) {
-            return true
-          }
-        })
+        //check if header contains
         emailHeader = headers.find((element) => {
           if (element.includes('email')) {
             return true
           }
         })
+        phoneHeader = headers.find((element) => {
+          if (element.includes('phone')) {
+            return true
+          }
+        })
       })
 
-    if (phoneHeader === undefined || emailHeader === undefined)
-      return res
-        .status(503)
-        .json({ msg: 'Phone Number or Email Field not found' })
+    //if no email or phone field found
+    if (emailHeader == undefined || phoneHeader == undefined)
+      return res.status(503).json({ msg: "'email' or 'phone' field not found" })
 
     fs.unlink(req.file.path, (err) => {
       if (err) {
@@ -74,81 +68,105 @@ router.post('/', uploadFile.single('file'), async (req, res) => {
       }
     })
 
-    let dupParams = await airtableSearch('Merchant Records', 'Scrubbing Tool')
-    let dupParamsInbound = await airtableSearch(
-      'Inbound Leads',
-      'Scrubbing Tool'
-    )
+    //records to block by
+    let badTokens = await airtableSearch('Bad Tokens')
+    let badEmails = await airtableSearch('Bad Emails')
+    let recsDNC = await airtableSearch('DNC')
 
-    const result = []
-    const dups = []
-    const map = new Map()
-    for (const item of dupParamsInbound) {
-      if (
-        !map.has(item.fields['Mobile Phone Formatted']) ||
-        !map.has(item.fields['Business Phone Formatted']) ||
-        !map.has(item.fields.Email)
-      ) {
-        map.set(item.fields['Mobile Phone Formatted'], true)
-        map.set(item.fields['Business Phone Formatted'], true)
-        map.set(item.fields.Email, true)
-      }
-    }
-    for (const item of dupParams) {
-      if (
-        !map.has(item.fields['Business Phone Text']) ||
-        !map.has(item.fields['Owner 1 Mobile Text']) ||
-        !map.has(item.fields['Email 1'])
-      ) {
-        map.set(item.fields['Business Phone Text'], true)
-        map.set(item.fields['Owner 1 Mobile Text'], true)
-        map.set(item.fields['Email 1'], true)
+    let results = []
+    let clean = []
+    let dirty = []
+    let tokensMap = new Map() //badTokens results into  map
+    let emailsMap = new Map() //badEmails results into  map
+    let dncMap = new Map() //dnc results into map
+
+    //adds badTokens records to map
+    for (let token of badTokens) {
+      if (!tokensMap.has(token.fields['token'])) {
+        tokensMap.set(token.fields['token'])
       }
     }
 
-    for (const item of csvData) {
-      const phoneTest = map.has(item[phoneHeader])
-      const emailTest = map.has(item[emailHeader])
-      if (phoneTest || emailTest) {
-        dups.push(item)
+    //add badEmails to map
+    for (let email of badEmails) {
+      emailsMap.set(email.fields['email'])
+    }
+
+    //add dncRecs to map
+    for (let rec of recsDNC) {
+      dncMap.set(rec.fields['phone'])
+      dncMap.set(rec.fields['mobile'])
+      dncMap.set(rec.fields['email'])
+    }
+
+    //if in tokensMap, add to dirty records else add it to clean
+    for (let item of csvData) {
+      let email = item[emailHeader]
+      let username = email.split('@')[0] //username to scrub against
+
+      if (dncMap.has(item[emailHeader]) || dncMap.has(item[phoneHeader])) {
+        dirty.push(item)
+      } else if (tokensMap.has(username) || emailsMap.has(email)) {
+        dirty.push(item)
+        let itemCopy = item
+        itemCopy.email = '' //clear email from csv item
+        results.push(itemCopy)
       } else {
-        result.push(item)
+        clean.push(item)
+        results.push(item)
       }
     }
-    //console.log(result)
 
     let attachments = []
 
-    if (result.length !== 0) {
-      const csv = json2csv(result, headerFields)
-
+    //if there are results records add to attachments
+    if (clean.length !== 0) {
+      let csv = json2csv(results, headerFields)
       fs.writeFile(
-        `./temp/${req.file.originalname} Export.csv`,
+        `./temp/${req.file.originalname} - RESULTS.csv`,
         csv,
         function (err) {
           if (err) throw err
-          console.log('file saved')
+          console.log('results file saved')
         }
       )
       attachments.push({
-        filename: `${req.file.originalname} Export.csv`,
-        path: `./temp/${req.file.originalname} Export.csv`,
+        filename: `${req.file.originalname} - RESULTS.csv`,
+        path: `./temp/${req.file.originalname} - RESULTS.csv`,
       })
     }
-    if (dups.length !== 0) {
-      headerFields.push('Dup Blocked MID')
-      const csv2 = json2csv(dups, headerFields)
+
+    //if there are clean records add to attachments
+    if (clean.length !== 0) {
+      let csv = json2csv(clean, headerFields)
       fs.writeFile(
-        `./temp/${req.file.originalname} DupBlock Export.csv`,
+        `./temp/${req.file.originalname} - CLEAN.csv`,
+        csv,
+        function (err) {
+          if (err) throw err
+          console.log('clean file saved')
+        }
+      )
+      attachments.push({
+        filename: `${req.file.originalname} - CLEAN.csv`,
+        path: `./temp/${req.file.originalname} - CLEAN.csv`,
+      })
+    }
+
+    //if there are dirty records add to attachments
+    if (dirty.length !== 0) {
+      let csv2 = json2csv(dirty, headerFields)
+      fs.writeFile(
+        `./temp/${req.file.originalname} - DIRTY.csv`,
         csv2,
         function (err) {
           if (err) throw err
-          console.log('file saved')
+          console.log('dirty file saved')
         }
       )
       attachments.push({
-        filename: `${req.file.originalname} DupBlock Export.csv`,
-        path: `./temp/${req.file.originalname} DupBlock Export.csv`,
+        filename: `${req.file.originalname} - DIRTY.csv`,
+        path: `./temp/${req.file.originalname} - DIRTY.csv`,
       })
     }
 
@@ -179,33 +197,38 @@ router.post('/', uploadFile.single('file'), async (req, res) => {
 
     // Change Email info
     sendNotifications(
-      'anthonycarlisi95@gmail.com',
-      `${req.file.originalname} Scrub ${Date.now}`,
-      'Test body',
+      sendToEmail,
+      `TOKEN SCRUB: ${req.file.originalname} - ${new Date().toLocaleString()}`,
+      'Token Scrub Results',
       attachments
     ).then(() => {
-      if (result.length !== 0) {
-        fs.unlink(`./temp/${req.file.originalname} Export.csv`, (err) => {
+      if (results.length !== 0) {
+        fs.unlink(`./temp/${req.file.originalname} - RESULTS.csv`, (err) => {
           if (err) {
             console.error(err)
             return
           }
         })
       }
-      if (dups.length !== 0) {
-        fs.unlink(
-          `./temp/${req.file.originalname} DupBlock Export.csv`,
-          (err) => {
-            if (err) {
-              console.error(err)
-              return
-            }
+      if (clean.length !== 0) {
+        fs.unlink(`./temp/${req.file.originalname} - CLEAN.csv`, (err) => {
+          if (err) {
+            console.error(err)
+            return
           }
-        )
+        })
+      }
+      if (dirty.length !== 0) {
+        fs.unlink(`./temp/${req.file.originalname} - DIRTY.csv`, (err) => {
+          if (err) {
+            console.error(err)
+            return
+          }
+        })
       }
     })
 
-    res.json(`Scrub Completed...`)
+    res.json(`Token Scrub Completed...`)
   } catch (err) {
     console.error(err.message)
     res.status(500).send('Server Error')
