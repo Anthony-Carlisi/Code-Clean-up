@@ -1,47 +1,25 @@
-const { google } = require('googleapis');
-const sheets = google.sheets('v4');
-
-async function authorize() {
-  const auth = new google.auth.GoogleAuth({
-    keyFile: 'keys.json',
-    scopes: ['https://www.googleapis.com/auth/spreadsheets'],
-  });
-
-  if (auth == null) {
-    throw Error('authentication failed');
-  }
-
-  return auth;
+const test = {
+  IP_Address: '172.58.140.100',
+  ULID: '12345678-abcd-1234-cdef-ba9876543210',
+  Best_Time_To_Contact: 'Early Afternoon 11AM-1PM',
+  Business_Website: 'cactus.com',
+  Age: 28,
+  Gender: 'Male',
+  Phone_Type: 'Mobile',
+  Phone_Active: 'True',
+  Prepaid: 'False',
+  Accept_Credit_Cards: 'Yes',
+  Credit_Card_Sales: '$15,000 - $25,000',
+  Number_of_MCA_Loans: '1',
+  Amount_Owed: '$100,000 - $200,000',
+  Collateral: 'No',
+  Has_401K: 'Yes',
+  Value_Of_401K: 1000,
+  Comments: 'test',
+  Requested_Loan_Amount: '$25,000 - $50,000',
+  Monthly_Gross_Sales: '$15,000 - $25,000',
+  Time_In_Business: 'Under 6 Months',
+  Personal_Credit_Score: 'Poor (550-599)',
+  Business_Type: 'Car Care',
+  Lead_ID: '7744111',
 }
-
-async function main() {
-  const authClient = await authorize();
-  const request = {
-    // The ID of the spreadsheet to retrieve data from.
-    spreadsheetId: '1hjjYZxtFoNE9sjbehDIcwUTquTsYzebuZbZ_cjZM5BA', // TODO: Update placeholder value.
-
-    // The A1 notation of the values to retrieve.
-    range: 'A:A', // TODO: Update placeholder value.
-
-    // How values should be represented in the output.
-    // The default render option is ValueRenderOption.FORMATTED_VALUE.
-    valueRenderOption: 'FORMATTED_VALUE', // TODO: Update placeholder value.
-
-    // How dates, times, and durations should be represented in the output.
-    // This is ignored if value_render_option is
-    // FORMATTED_VALUE.
-    // The default dateTime render option is [DateTimeRenderOption.SERIAL_NUMBER].
-    dateTimeRenderOption: 'FORMATTED_STRING', // TODO: Update placeholder value.
-
-    auth: authClient,
-  };
-
-  try {
-    const response = (await sheets.spreadsheets.values.get(request)).data;
-    // TODO: Change code below to process the `response` object:
-    console.log(JSON.stringify(response, null, 2));
-  } catch (err) {
-    console.error(err);
-  }
-}
-main();

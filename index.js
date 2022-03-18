@@ -1,7 +1,5 @@
 //Modules Needed
 const express = require('express'),
-  bodyParser = require('body-parser'),
-  moment = require('moment'),
   Filter = require('bad-words'),
   filter = new Filter(),
   //Helper
@@ -17,6 +15,8 @@ app.use(express.json({ extended: false }))
 app.use('/api/create', require('./routes/api/create'))
 app.use('/api/tokenScrub', require('./routes/api/tokenScrub'))
 app.use('/api/upload', require('./routes/api/upload'))
+app.use('/api/test', require('./routes/api/test'))
+app.use('/api/popCrumbs', require('./routes/api/popCrumbs'))
 
 filter.addWords(
   'not interested',
