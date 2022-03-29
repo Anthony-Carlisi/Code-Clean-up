@@ -48,9 +48,10 @@ router.get('/', async (req, res) => {
       ['Business City']: city,
       ['Business State']: state,
       ['Business Zip']: zip,
-      ['Tag (Vendor)']: 'rectqM9B1Gx7zU6v7',
-      ['Lead Type (Vehicle']: '',
-      ['Lead Source(iMerchant Lead Source)']: '',
+      ['Tag (Vendor)']: ['rectqM9B1Gx7zU6v7'],
+      ['Lead Type (Vehicle)']: ['recxxRZlDEadnzlYj'],
+      ['Lead Source (iMerchant Lead Source)']: ['recwQSCQPPhdfB8kJ'],
+      ['Agent Status']: 'New Lead',
     }
 
     const createNewInboundLead = await airtableHelper.airtableCreate(
