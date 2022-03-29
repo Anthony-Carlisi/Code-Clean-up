@@ -33,8 +33,24 @@ router.get('/', async (req, res) => {
 
     // Checking to see if record is a dupBlock
     const dupCheck = await dupBlockerCheck([phone])
+
     // if DupBlock does exist
     if (dupCheck?.length > 0) return res.send(`This Lead is a Dup Block`)
+
+    const newLeadObj = {
+      ['Merchant First Name']: firstName,
+      Last_Name: lastName,
+      ['Company Name']: companyName,
+      Email: email,
+      Primary_Phone: phone,
+      Secondary_Phone: secondaryPhone,
+      Alternate_Phone_1: altPhone1,
+      Alternate_Phone_2: altPhone2,
+      Address: address,
+      City: city,
+      State: state,
+      Zip: zip,
+    }
 
     console.log(phoneArray)
     res.sendStatus(200)

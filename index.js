@@ -283,25 +283,6 @@ app.post('/SHM/SMS', (req, res) => {
   res.status(200).end()
 })
 
-//SEND SHM EMAIL RESPONSE TO SARAH
-app.post('/SHM/EMAIL', (req, res) => {
-  console.log(req.body)
-  let emailBody = req.body.message.body.split('\n')[0].replace(/(\[.*?\])/g, '')
-  if (!filter.isProfane(emailBody)) {
-    mailer.sendNotifications(
-      'sjuaidi@straighthomemortgage.com',
-      `New SHM Positive Email Response by ${req.body.first_name} ${req.body.last_name} from number ${req.body.phone}`,
-      `First Name: ${req.body.first_name}
-        Last Name: ${req.body.last_name}
-        Phone Number: ${req.body.phone}
-        State: ${req.body.state}
-        City: ${req.body.city}
-        MESSAGE: ${emailBody}`
-    )
-  }
-  res.status(200).end()
-})
-
 //ADD CCoupons LEADS TO INBOUND LEADS
 app.post('/SMS/ORIGINATION', (req, res) => {
   //  console.log(req);
