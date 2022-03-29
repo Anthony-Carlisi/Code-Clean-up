@@ -32,11 +32,12 @@ router.get('/', async (req, res) => {
     })
 
     // Checking to see if record is a dupBlock
-    const dupCheck = await dupBlockerCheck([phone])
+    const dupCheck = await dupBlockerCheck(phoneArray)
 
     // if DupBlock does exist
     if (dupCheck?.length > 0) return res.send(`This Lead is a Dup Block`)
 
+    // New Object created for inbound leads
     const newLeadObj = {
       ['Merchant First Name']: firstName,
       ['Merchant Last Name']: lastName,
@@ -54,13 +55,9 @@ router.get('/', async (req, res) => {
       ['Agent Status']: 'New Lead',
     }
 
-    const createNewInboundLead = await airtableHelper.airtableCreate(
-      'Inbound Leads',
-      newLeadObj
-    )
-
-    console.log(createNewInboundLead)
-
+    // Create New Lead
+    await airtableHelper.airtableCreate('Inbound Leads', newLeadObj)
+    //Return ok
     res.sendStatus(200)
   } catch (err) {
     console.error(err.message)
