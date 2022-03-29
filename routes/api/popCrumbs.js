@@ -6,7 +6,7 @@ const airtableHelper = require('../../hooks/airtableHelper.js')
 // @route   Post api/popCrumbs
 // @desc    test
 // @access  Public
-router.get('/', async (req, res) => {
+router.post('/', async (req, res) => {
   try {
     const {
       First_Name: firstName,
