@@ -39,20 +39,27 @@ router.get('/', async (req, res) => {
 
     const newLeadObj = {
       ['Merchant First Name']: firstName,
-      Last_Name: lastName,
+      ['Merchant Last Name']: lastName,
       ['Company Name']: companyName,
       Email: email,
-      Primary_Phone: phone,
-      Secondary_Phone: secondaryPhone,
-      Alternate_Phone_1: altPhone1,
-      Alternate_Phone_2: altPhone2,
-      Address: address,
-      City: city,
-      State: state,
-      Zip: zip,
+      ['Business Phone']: phone,
+      ['Mobile Phone']: secondaryPhone,
+      ['Business Address']: address,
+      ['Business City']: city,
+      ['Business State']: state,
+      ['Business Zip']: zip,
+      ['Tag (Vendor)']: 'rectqM9B1Gx7zU6v7',
+      ['Lead Type (Vehicle']: '',
+      ['Lead Source(iMerchant Lead Source)']: '',
     }
 
-    console.log(phoneArray)
+    const createNewInboundLead = await airtableHelper.airtableCreate(
+      'Inbound Leads',
+      newLeadObj
+    )
+
+    console.log(createNewInboundLead)
+
     res.sendStatus(200)
   } catch (err) {
     console.error(err.message)
