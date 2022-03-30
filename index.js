@@ -17,6 +17,7 @@ app.use(express.json({ extended: false }))
 app.use('/api/create', require('./routes/api/create'))
 app.use('/api/tokenScrub', require('./routes/api/tokenScrub'))
 app.use('/api/upload', require('./routes/api/upload'))
+app.use('/api/upload', require('./routes/api/ricoToSalesforce'))
 
 filter.addWords(
   'not interested',

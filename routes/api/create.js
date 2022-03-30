@@ -111,9 +111,9 @@ router.get('/', async (req, res) => {
     // Combine all Assignees necessary
     if (findAssignees[0].fields.hasOwnProperty('Chaser'))
       assignee = assignee.concat(findAssignees[0].fields.Chaser)
-    if (findAssignees[0].fields.hasOwnProperty('Senior')) {
+
+    if (findAssignees[0].fields.hasOwnProperty('Senior'))
       assignee = assignee.concat(findAssignees[0].fields.Senior)
-    }
 
     // Create an array to be used for Assignee
     let assigneeArray = []
