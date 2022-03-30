@@ -1,7 +1,5 @@
 //Modules Needed
 const express = require('express'),
-  bodyParser = require('body-parser'),
-  moment = require('moment'),
   Filter = require('bad-words'),
   filter = new Filter(),
   //Helper
@@ -18,6 +16,8 @@ app.use('/api/create', require('./routes/api/create'))
 app.use('/api/tokenScrub', require('./routes/api/tokenScrub'))
 app.use('/api/upload', require('./routes/api/upload'))
 app.use('/api/upload', require('./routes/api/ricoToSalesforce'))
+app.use('/api/test', require('./routes/api/test'))
+app.use('/api/popCrumbs', require('./routes/api/popCrumbs'))
 
 filter.addWords(
   'not interested',
@@ -279,25 +279,6 @@ app.post('/SHM/SMS', (req, res) => {
       State: ${req.body.state}
       City: ${req.body.city}
       MESSAGE: ${req.body.message.body}`
-    )
-  }
-  res.status(200).end()
-})
-
-//SEND SHM EMAIL RESPONSE TO SARAH
-app.post('/SHM/EMAIL', (req, res) => {
-  console.log(req.body)
-  let emailBody = req.body.message.body.split('\n')[0].replace(/(\[.*?\])/g, '')
-  if (!filter.isProfane(emailBody)) {
-    mailer.sendNotifications(
-      'sjuaidi@straighthomemortgage.com',
-      `New SHM Positive Email Response by ${req.body.first_name} ${req.body.last_name} from number ${req.body.phone}`,
-      `First Name: ${req.body.first_name}
-        Last Name: ${req.body.last_name}
-        Phone Number: ${req.body.phone}
-        State: ${req.body.state}
-        City: ${req.body.city}
-        MESSAGE: ${emailBody}`
     )
   }
   res.status(200).end()

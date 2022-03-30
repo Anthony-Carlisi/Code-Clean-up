@@ -41,9 +41,9 @@ router.get('/', async (req, res) => {
     // Combine all Assignees necessary
     if (findAssignees[0].fields.hasOwnProperty('Chaser'))
       assignee = assignee.concat(findAssignees[0].fields.Chaser)
-
-    if (findAssignees[0].fields.hasOwnProperty('Senior'))
+    if (findAssignees[0].fields.hasOwnProperty('Senior')) {
       assignee = assignee.concat(findAssignees[0].fields.Senior)
+    }
 
     // Loop through each assignee and get there IDs
     const assigneesIdsPromises = assignee.map(async (assignee) => {
