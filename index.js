@@ -5,7 +5,8 @@ const express = require('express'),
   //Helper
   airtableHelper = require('./JS_Helper/AIRTABLE_HELPER'),
   rico = require('./JS_Helper/RICOCHET_HELPER'),
-  mailer = require('./JS_Helper/EMAIL_NOTIFICATION')
+  mailer = require('./JS_Helper/EMAIL_NOTIFICATION'),
+  jsforce = require('jsforce')
 //Scripts
 
 const app = express()
@@ -15,7 +16,7 @@ app.use(express.json({ extended: false }))
 app.use('/api/create', require('./routes/api/create'))
 app.use('/api/tokenScrub', require('./routes/api/tokenScrub'))
 app.use('/api/upload', require('./routes/api/upload'))
-app.use('/api/upload', require('./routes/api/ricoToSalesforce'))
+app.use('/api/ricoToSalesforce', require('./routes/api/ricoToSalesforce'))
 app.use('/api/test', require('./routes/api/test'))
 app.use('/api/popCrumbs', require('./routes/api/popCrumbs'))
 
@@ -194,72 +195,72 @@ app.post('/WP/SMS/origination', (req, res) => {
   }
 })
 
-function Recycle() {
-  airtableHelper.airtableSearch5().then((response) => {
-    response.forEach((jsdata) => {
-      //console.log(jsdata.fields.Status);
-      if (
-        jsdata.fields.Status == 'Submitted' ||
-        jsdata.fields.Status == 'Approved' ||
-        jsdata.fields.Status == 'Contracts Out' ||
-        jsdata.fields.Status == 'Contracts In'
-      ) {
-        var data = {
-          MID: jsdata.fields.MID,
-          'Company Name': jsdata.fields['Legal Name'],
-          'First Name': jsdata.fields['Merchant 1 Full Name'],
-          Phone: jsdata.fields['Business Phone'],
-          Email: jsdata.fields['Email 1'],
-        }
+// function Recycle() {
+//   airtableHelper.airtableSearch5().then((response) => {
+//     response.forEach((jsdata) => {
+//       //console.log(jsdata.fields.Status);
+//       if (
+//         jsdata.fields.Status == 'Submitted' ||
+//         jsdata.fields.Status == 'Approved' ||
+//         jsdata.fields.Status == 'Contracts Out' ||
+//         jsdata.fields.Status == 'Contracts In'
+//       ) {
+//         var data = {
+//           MID: jsdata.fields.MID,
+//           'Company Name': jsdata.fields['Legal Name'],
+//           'First Name': jsdata.fields['Merchant 1 Full Name'],
+//           Phone: jsdata.fields['Business Phone'],
+//           Email: jsdata.fields['Email 1'],
+//         }
 
-        //console.log(jsdata.fields.Assignees);
+//         //console.log(jsdata.fields.Assignees);
 
-        if (jsdata.fields.Assignees.includes('recqDyJZU3biJoVoy')) {
-          //if Joe Davino is included
-          console.log(jsdata)
-          const postingto =
-            'https://leads.ricochet.me/api/v1/lead/create/Recycle-Senior?token=1ef9c4efa09e3cb6d9a31a435f711997'
-          rico.RicoPostNewLead(postingto, data).then((response) => {
-            if (response.message != 'Duplicate') {
-              rico.RicoUpdateTag(response.lead_id, 'Recycle Senior API')
-            }
-          })
-        } else {
-          const postingto =
-            'https://leads.ricochet.me/api/v1/lead/create/Recycle-Seniors?token=1ef9c4efa09e3cb6d9a31a435f711997'
-          rico.RicoPostNewLead(postingto, data).then((response) => {
-            if (response.message != 'Duplicate') {
-              rico.RicoUpdateTag(response.lead_id, 'Recycle Seniors API')
-            }
-          })
-        }
-      } else if (jsdata.fields.Status == 'App Out') {
-        var data = {
-          MID: jsdata.fields.MID,
-          'Company Name': jsdata.fields['Legal Name'],
-          'First Name': jsdata.fields['Merchant 1 Full Name'],
-          Phone: jsdata.fields['Business Phone'],
-          Email: jsdata.fields['Email 1'],
-        }
-        const postingto =
-          'https://leads.ricochet.me/api/v1/lead/create/Power-Hour?token=1ef9c4efa09e3cb6d9a31a435f711997'
-        rico.RicoPostNewLead(postingto, data).then((response) => {
-          if (response.message != 'Duplicate') {
-            rico.RicoUpdateTag(response.lead_id, 'Power Hour API')
-          }
-        })
-      }
-    })
-  })
-}
-//Recycle();
-setInterval(Recycle, 1000 * 60 * 60 * 24) //every 24 hours
+//         if (jsdata.fields.Assignees.includes('recqDyJZU3biJoVoy')) {
+//           //if Joe Davino is included
+//           console.log(jsdata)
+//           const postingto =
+//             'https://leads.ricochet.me/api/v1/lead/create/Recycle-Senior?token=1ef9c4efa09e3cb6d9a31a435f711997'
+//           rico.RicoPostNewLead(postingto, data).then((response) => {
+//             if (response.message != 'Duplicate') {
+//               rico.RicoUpdateTag(response.lead_id, 'Recycle Senior API')
+//             }
+//           })
+//         } else {
+//           const postingto =
+//             'https://leads.ricochet.me/api/v1/lead/create/Recycle-Seniors?token=1ef9c4efa09e3cb6d9a31a435f711997'
+//           rico.RicoPostNewLead(postingto, data).then((response) => {
+//             if (response.message != 'Duplicate') {
+//               rico.RicoUpdateTag(response.lead_id, 'Recycle Seniors API')
+//             }
+//           })
+//         }
+//       } else if (jsdata.fields.Status == 'App Out') {
+//         var data = {
+//           MID: jsdata.fields.MID,
+//           'Company Name': jsdata.fields['Legal Name'],
+//           'First Name': jsdata.fields['Merchant 1 Full Name'],
+//           Phone: jsdata.fields['Business Phone'],
+//           Email: jsdata.fields['Email 1'],
+//         }
+//         const postingto =
+//           'https://leads.ricochet.me/api/v1/lead/create/Power-Hour?token=1ef9c4efa09e3cb6d9a31a435f711997'
+//         rico.RicoPostNewLead(postingto, data).then((response) => {
+//           if (response.message != 'Duplicate') {
+//             rico.RicoUpdateTag(response.lead_id, 'Power Hour API')
+//           }
+//         })
+//       }
+//     })
+//   })
+// }
+// //Recycle();
+// setInterval(Recycle, 1000 * 60 * 60 * 24) //every 24 hours
 
-function fn60sec() {
-  airtableHelper.airtableSubstatus()
-}
-//fn60sec();
-setInterval(fn60sec, 60 * 1000) //every minute
+// function fn60sec() {
+//   airtableHelper.airtableSubstatus()
+// }
+// //fn60sec();
+// setInterval(fn60sec, 60 * 1000) //every minute
 
 //UPDATE RICOCHET TAG
 app.post('/RicoTagUpdate', (req, res) => {

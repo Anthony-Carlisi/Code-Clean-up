@@ -2,5 +2,8 @@
   "airtableApiKey": "keyZ0WMDk0n8pJ7yl",
   "airtableBase": "appumwVbyIXggVLmr",
   "scrubbingBase": "appAVhpuWBvD9V72Y",
-  "businessEmailPass": "yjlrfxqyvrsgbfyt"
+  "businessEmailPass": "yjlrfxqyvrsgbfyt",
+  "salesforceEmail": "ehernandez@straightlinesource.com",
+  "salesforcePassword": "SLS2021$",
+  "salesforceToken": "ZVuWdPP3I3ARgdCJglj0Frp2"
 }

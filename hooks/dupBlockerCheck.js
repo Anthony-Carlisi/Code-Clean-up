@@ -14,19 +14,17 @@ module.exports = dupBlockerCheck = async (phoneNumbers) => {
         'Scrubbing Tool'
       )
 
-      // Funded Deals letting senior know that merchant is shopping
+      // Funded Deals letting seniors know that merchant is shopping
       let seniorAgentsNameArray = []
       for (i = 0; i < dupRecordCheck.length; i++) {
         if (dupRecordCheck[i].fields.Status === 'Funded') {
-          const seniorAgentsNames =
-            dupRecordCheck[i].fields['Senior (from Primary Assignee)']
-
+          let seniorAgentsNames = dupRecordCheck[i].fields['Senior (from Primary Assignee)']
+          if(seniorAgentsNames == undefined) //if no senior found, add the primary
+            seniorAgentsNames = dupRecordCheck[i].fields['Primary Assignee'] //this will return a recID not a name
           for (a = 0; a < seniorAgentsNames.length; a++) {
             let dupObj = {
               mid: dupRecordCheck[i].fields.MID,
-              name: dupRecordCheck[i].fields['Senior (from Primary Assignee)'][
-                a
-              ],
+              name: seniorAgentsNames[a],
             }
             seniorAgentsNameArray.push(dupObj)
           }
@@ -38,7 +36,7 @@ module.exports = dupBlockerCheck = async (phoneNumbers) => {
         async (seniorName) => {
           const seniorAgentEmailSearch = await airtableHelper.airtableSearch(
             'Agent Table',
-            `{Name} = '${seniorName.name}'`,
+            `OR({Name} = '${seniorName.name}', RECORD_ID() = '${seniorName.name}')`, //check for name if there is a senior, if not search for recID
             'Grid view'
           )
           if (seniorAgentEmailSearch[0].fields.Email)
@@ -84,7 +82,7 @@ module.exports = dupBlockerCheck = async (phoneNumbers) => {
     const results = resultsArray.filter((x) => {
       return x !== undefined
     })
-    return results
+    return results //the list of objects that were dupblocked
   } catch (error) {
     console.log(error)
   }
