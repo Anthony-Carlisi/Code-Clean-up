@@ -108,6 +108,10 @@ router.get('/', async (req, res) => {
         state: state,
         PostalCode: zip.substring(0, 5),
         email: email,
+        CampaignID__c: '7018c000000xC4PAAU',
+        ricoLeadSource__c: leadSource,
+        ricoVendor__c: vendor,
+        ricoUploadDate__c: Date.parse(uploadDate)
       },
       function (err, ret) {
         if (err || !ret.success) {
