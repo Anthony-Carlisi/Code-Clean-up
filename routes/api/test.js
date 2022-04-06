@@ -1,117 +1,105 @@
 const express = require('express')
 const router = express.Router()
-const dupBlockerCheck = require('../../hooks/dupBlockerCheck')
-const airtableHelper = require('../../hooks/airtableHelper.js')
+const jsforce = require('jsforce')
+const config = require('config')
+const multer = require('multer')
+
+var storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'temp/')
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.originalname)
+  },
+})
+const uploadFile = multer({ storage: storage })
+
+// initial Salesfoce Connection
+const conn = new jsforce.Connection({
+  loginUrl: 'https://login.salesforce.com',
+})
 
 // @route   Post api/test
 // @desc    test
 // @access  Public
-router.get('/', async (req, res) => {
+router.post('/', uploadFile.single('file'), async (req, res) => {
   try {
-    // Deconstruct object from Ricochet
-    let {
-      companyName,
-      assignee,
-      uploadDate,
-      phone,
-      address,
-      city,
-      state,
-      zip,
-      leadSource,
-      firstName,
-      lastName,
-      email,
-    } = req.query
+    //Deconstruct Object
+    const {
+      q63_fundingspecialist: agentFullName,
+      q138_Amount_Requested: amountRequest,
+      q174_use_of_funds: useOfFunds,
+      q12_federal_tax_id: federalTaxId,
+      q7_legalbusinessname: legalBusinessName,
+      q8_business_dba: businessDba,
+      q161_Industry_Type: industryType,
+      q24_entity_type: entityType,
+      q27_state_incorporated: stateIncorp,
+      q175_annual_revenue: annRevenue,
+      q14_business_address: businessAddress,
+      q186_business_phone: { full: businessPhone },
+      q16_business_city: businessCity,
+      q28_business_state: businessState,
+      q25_business_zip: businessZip,
+      q121_f_first_name: fFirstName,
+      q122_f_last_name: fLastName,
+      q187_f_cell_phone: { full: fCellPhone },
+      q36_f_ssn: fSsn,
+      q38_businessOwnership: fBusinessOwnership,
+      q40_f_home_address: fHomeAddress,
+      q45_email: fEmail,
+      q43_f_city: fCity,
+      q156_f_state: fState,
+      q42_f_zip_code: fZipCode,
+      q185_leadId: leadId,
+    } = JSON.parse(req.body.rawRequest)
 
-    //Dup Blocking
-    const dupCheck = await dupBlockerCheck([phone])
-    if (dupCheck?.length > 0) return res.send(`This Lead is a Dup Block`)
-
-    // Find Assignee in Agent Table off Ricochet Assignee
-    const findAssignees = await airtableHelper.airtableSearch(
-      'Agent Table',
-      `{Email} = '${assignee}'`,
-      'Grid view'
+    // Salesforce Login
+    await conn.login(
+      config.get('salesforceEmail'),
+      config.get('salesforcePassword') + config.get('salesforceToken'),
+      (err) => {
+        if (err) return err
+      }
     )
 
-    // Change Assignee to Name instead of email
-    assignee = [findAssignees[0].fields.Name]
-
-    // Combine all Assignees necessary
-    if (findAssignees[0].fields.hasOwnProperty('Chaser'))
-      assignee = assignee.concat(findAssignees[0].fields.Chaser)
-    if (findAssignees[0].fields.hasOwnProperty('Senior')) {
-      assignee = assignee.concat(findAssignees[0].fields.Senior)
-    }
-
-    // Loop through each assignee and get there IDs
-    const assigneesIdsPromises = assignee.map(async (assignee) => {
-      const findAssignee = await airtableHelper.airtableSearch(
-        'Agent Table',
-        `{Name} = '${assignee}'`,
-        'Grid view'
+    // Searchs leads based off lead id will return either an id or undefined
+    const lead = async (leadId) =>
+      await conn.query(
+        `SELECT id FROM Lead WHERE id = ${leadId}`,
+        (err, data) => {
+          if (err) return 'err'
+          if (data.totalSize !== 0) return data.records[0].Id
+        }
       )
-      return findAssignee[0].id
-    })
 
-    assignee = await Promise.all(assigneesIdsPromises)
-
-    // Find Lead Source Id based off lead Source Name
-    const leadSourceSearch = await airtableHelper.airtableSearch(
-      'Lead Source',
-      `{Lead Source} = '${leadSource}'`,
-      'Grid view'
-    )
-
-    // Assign Lead Source Id to leadSource
-    if (leadSourceSearch?.length > 0) {
-      leadSource = [leadSourceSearch[0].id]
-    } else {
-      // if no lead source found default to Undefined
-      leadSource = ['recD8X2Wc4ey8SVZT']
-    }
-
-    //  Create Object to send to Airtable
-    const airtableLead = {
-      'Legal Name': companyName,
-      // Passing Assignee ID
-      Assignees: assignee,
-      'Primary Assignee': [assignee[0]],
-      'Upload Date': uploadDate,
-      'Business Phone': phone.toString(),
-      'Business Address': address,
-      'Business Zip': zip,
-      'Business City': city,
-      'Business State': state,
-      'Lead Source': leadSource,
-      // ID for Dialer
-      'Marketing Method': ['rec8xeFAHTpPr6tYs'],
-      'Merchant 1 Full Name': `${firstName} ${lastName}`,
-      'Email 1': email,
-    }
-
-    // Checks to see if lead exists prior to creating a new lead
-    const updateRecordCheck = await airtableHelper.airtableSearch(
-      'Merchant Records',
-      `OR({Business Phone Text} = ${phone}, {Owner 1 Mobile Text} = ${phone})`,
-      'Grid view'
-    )
-
-    // If records is found to bed updated
-    if (updateRecordCheck?.length > 0) {
-      //console.log(updateRecordCheck[0].fields)
-      const updatedLead = await airtableHelper.airtableUpdate(
-        'Merchant Records',
-        updateRecordCheck[0].id,
-        airtableLead
+    // if lead query returns an object if will continue
+    if (await lead(leadId)) {
+      //updating the lead based off id
+      await conn.sobject('Lead').update(
+        {
+          id: leadId,
+          Phone: businessPhone,
+          name: fFirstName + ' ' + fLastName,
+          Company: legalBusinessName,
+          Email: fEmail,
+          McaApp__Federal_Tax_ID_No__c: federalTaxId,
+          McaApp__Amount_Requested__c: amountRequest,
+          McaApp__Use_of_Proceeds__c: useOfFunds,
+          McaApp__DBA_Name__c: businessDba,
+          McaApp__Social_Security_Number__c: fSsn,
+        },
+        function (err, res) {
+          if (err || !req.success) return console.error(err)
+        }
       )
-      return res.send(`Lead Updated! MID is ${updatedLead[0].fields.MID}`)
+
+      await conn.logout(function (err) {
+        if (err) return console.error(err)
+      })
     }
 
-    airtableHelper.airtableCreate('Merchant Records', airtableLead)
-
-    res.send(`New Lead Created`)
+    res.status(200).send(`Lead Updated ${leadId}`)
   } catch (err) {
     console.error(err.message)
     res.status(500).send('Server Error')
