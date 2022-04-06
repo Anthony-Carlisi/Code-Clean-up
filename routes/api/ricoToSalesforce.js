@@ -7,7 +7,6 @@ const dupBlockerCheck = require('../../hooks/dupBlockerCheck')
 
 const conn = new jsforce.Connection({
   loginUrl: 'https://login.salesforce.com',
-
 })
 
 // initConnect = async () => {
@@ -92,7 +91,8 @@ router.get('/', async (req, res) => {
     )
 
     let dupATCheck = await dupBlockerCheck([phone])
-    if (dupATCheck?.length > 0) return res.send(`This Lead is a Dup Block in Stacker`)
+    if (dupATCheck?.length > 0)
+      return res.send(`This Lead is a Dup Block in Stacker`)
 
     //create lead object
     await conn.sobject('Lead').create(
@@ -111,7 +111,8 @@ router.get('/', async (req, res) => {
         CampaignID__c: '7018c000000xC4PAAU',
         ricoLeadSource__c: leadSource,
         ricoVendor__c: vendor,
-        ricoUploadDate__c: Date.parse(uploadDate)
+        LeadSource: 'Ricochet',
+        ricoUploadDate__c: Date.parse(uploadDate),
       },
       function (err, ret) {
         if (err || !ret.success) {
