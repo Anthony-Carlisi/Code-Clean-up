@@ -17,7 +17,7 @@ app.use('/api/create', require('./routes/api/create'))
 app.use('/api/tokenScrub', require('./routes/api/tokenScrub'))
 app.use('/api/upload', require('./routes/api/upload'))
 app.use('/api/ricoToSalesforce', require('./routes/api/ricoToSalesforce'))
-app.use('/api/test', require('./routes/api/test'))
+app.use('/api/sfJotform', require('./routes/api/sfJotform'))
 app.use('/api/popCrumbs', require('./routes/api/popCrumbs'))
 
 filter.addWords(

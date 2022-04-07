@@ -78,9 +78,9 @@ router.post('/', uploadFile.single('file'), async (req, res) => {
       //updating the lead based off id
       await conn.sobject('Lead').update(
         {
-          id: leadId,
+          Id: leadId,
           Phone: businessPhone,
-          name: fFirstName + ' ' + fLastName,
+          // Name: fFirstName + ' ' + fLastName,
           Company: legalBusinessName,
           Email: fEmail,
           McaApp__Federal_Tax_ID_No__c: federalTaxId,
@@ -88,6 +88,8 @@ router.post('/', uploadFile.single('file'), async (req, res) => {
           McaApp__Use_of_Proceeds__c: useOfFunds,
           McaApp__DBA_Name__c: businessDba,
           McaApp__Social_Security_Number__c: fSsn,
+          Address: businessAddress,
+          McaApp__Cell_Phone__c: fCellPhone,
         },
         function (err, res) {
           if (err || !req.success) return console.error(err)
