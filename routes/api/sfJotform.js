@@ -96,7 +96,7 @@ router.post('/', uploadFile.single('file'), async (req, res) => {
           city: businessCity,
           state: businessState,
           McaApp__Years_in_Business__c: yearInBusiness,
-          zip: businessZip,
+          PostalCode: businessZip,
           Industry: industryType,
         },
         function (err, res) {
