@@ -53,14 +53,14 @@ router.post('/', uploadFile.single('file'), async (req, res) => {
       // q42_f_zip_code: fZipCode,
       q185_leadId: leadId,
       q146_yearsIn: yearInBusiness,
-      q48_date4: {
+      q48_date48: {
         month: businessStartDateMonth,
         day: businessStartDateDay,
         year: businessStartDateYears,
       },
     } = JSON.parse(req.body.rawRequest)
-    const businessStartDate = `${businessStartDateMonth}/${businessStartDateDay}/${businessStartDateYears}`
-    console.log(req.body.rawRequest)
+    const businessStartDate = `${businessStartDateYears}-${businessStartDateMonth}-${businessStartDateDay}`
+    // console.log(req.body.rawRequest)
     // Salesforce Login
     await conn.login(
       config.get('salesforceEmail'),
