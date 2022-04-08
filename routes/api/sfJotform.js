@@ -53,8 +53,14 @@ router.post('/', uploadFile.single('file'), async (req, res) => {
       // q42_f_zip_code: fZipCode,
       q185_leadId: leadId,
       q146_yearsIn: yearInBusiness,
+      q48_date4: {
+        month: businessStartDateMonth,
+        day: businessStartDateDay,
+        year: businessStartDateYears,
+      },
     } = JSON.parse(req.body.rawRequest)
-
+    const businessStartDate = `${businessStartDateMonth}/${businessStartDateDay}/${businessStartDateYears}`
+    console.log(req.body.rawRequest)
     // Salesforce Login
     await conn.login(
       config.get('salesforceEmail'),
@@ -98,6 +104,7 @@ router.post('/', uploadFile.single('file'), async (req, res) => {
           McaApp__Years_in_Business__c: yearInBusiness,
           PostalCode: businessZip,
           Industry: industryType,
+          Business_Start_Date__c: businessStartDate,
         },
         function (err, res) {
           if (err || !req.success) return console.error(err)
