@@ -97,7 +97,7 @@ router.post('/', uploadFile.single('file'), async (req, res) => {
           McaApp__DBA_Name__c: businessDba,
           McaApp__Social_Security_Number__c: fSsn,
           McaApp__Cell_Phone__c: fCellPhone,
-          // AnnualRevenue: annRevenue,
+          AnnualRevenue: annRevenue,
           street: businessAddress,
           city: businessCity,
           state: businessState,
