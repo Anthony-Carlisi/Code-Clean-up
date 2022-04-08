@@ -21,7 +21,7 @@ app.use(
   '/api/airtableToSalesforce',
   require('./routes/api/airtableToSalesforce')
 )
-app.use('/api/test', require('./routes/api/test'))
+// app.use('/api/test', require('./routes/api/test'))
 app.use('/api/sfJotform', require('./routes/api/sfJotform'))
 app.use('/api/popCrumbs', require('./routes/api/popCrumbs'))
 
