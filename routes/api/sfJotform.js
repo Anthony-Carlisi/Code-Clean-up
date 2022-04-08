@@ -26,15 +26,15 @@ router.post('/', uploadFile.single('file'), async (req, res) => {
   try {
     //Deconstruct Object
     const {
-      q63_fundingspecialist: agentFullName,
+      // q63_fundingspecialist: agentFullName,
       q138_Amount_Requested: amountRequest,
       q174_use_of_funds: useOfFunds,
       q12_federal_tax_id: federalTaxId,
       q7_legalbusinessname: legalBusinessName,
       q8_business_dba: businessDba,
       q161_Industry_Type: industryType,
-      q24_entity_type: entityType,
-      q27_state_incorporated: stateIncorp,
+      // q24_entity_type: entityType,
+      // q27_state_incorporated: stateIncorp,
       q175_annual_revenue: annRevenue,
       q14_business_address: businessAddress,
       q186_business_phone: { full: businessPhone },
@@ -45,13 +45,14 @@ router.post('/', uploadFile.single('file'), async (req, res) => {
       q122_f_last_name: fLastName,
       q187_f_cell_phone: { full: fCellPhone },
       q36_f_ssn: fSsn,
-      q38_businessOwnership: fBusinessOwnership,
-      q40_f_home_address: fHomeAddress,
+      // q38_businessOwnership: fBusinessOwnership,
+      // q40_f_home_address: fHomeAddress,
       q45_email: fEmail,
-      q43_f_city: fCity,
-      q156_f_state: fState,
-      q42_f_zip_code: fZipCode,
+      // q43_f_city: fCity,
+      // q156_f_state: fState,
+      // q42_f_zip_code: fZipCode,
       q185_leadId: leadId,
+      q146_yearsIn: yearInBusiness,
     } = JSON.parse(req.body.rawRequest)
 
     // Salesforce Login
@@ -80,7 +81,8 @@ router.post('/', uploadFile.single('file'), async (req, res) => {
         {
           Id: leadId,
           Phone: businessPhone,
-          // Name: fFirstName + ' ' + fLastName,
+          FirstName: fFirstName,
+          LastName: fLastName,
           Company: legalBusinessName,
           Email: fEmail,
           McaApp__Federal_Tax_ID_No__c: federalTaxId,
@@ -90,6 +92,13 @@ router.post('/', uploadFile.single('file'), async (req, res) => {
           McaApp__Social_Security_Number__c: fSsn,
           Address: businessAddress,
           McaApp__Cell_Phone__c: fCellPhone,
+          AnnualRevenue: annRevenue,
+          street: businessAddress,
+          city: businessCity,
+          state: businessState,
+          McaApp__Years_in_Business__c: yearInBusiness,
+          zip: businessZip,
+          Industry: industryType,
         },
         function (err, res) {
           if (err || !req.success) return console.error(err)
