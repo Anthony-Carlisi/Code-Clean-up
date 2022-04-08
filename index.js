@@ -17,6 +17,11 @@ app.use('/api/create', require('./routes/api/create'))
 app.use('/api/tokenScrub', require('./routes/api/tokenScrub'))
 app.use('/api/upload', require('./routes/api/upload'))
 app.use('/api/ricoToSalesforce', require('./routes/api/ricoToSalesforce'))
+app.use(
+  '/api/airtableToSalesforce',
+  require('./routes/api/airtableToSalesforce')
+)
+app.use('/api/test', require('./routes/api/test'))
 app.use('/api/sfJotform', require('./routes/api/sfJotform'))
 app.use('/api/popCrumbs', require('./routes/api/popCrumbs'))
 
@@ -74,7 +79,7 @@ app.post('/SLS/SMS/origination', (req, res) => {
 
   let assignees = [],
     campaignName = req.body.campaign.name
-  console.log(req.body)
+  //console.log(req.body)
 
   //set message variable based on type
   if (req.body.message.type === 3) {
@@ -118,6 +123,7 @@ app.post('/SLS/SMS/origination', (req, res) => {
               'Lead Source (iMerchant Lead Source)': req.body['Lead Source'],
               'Lead Type (Vehicle)': tag,
               'Primary Asignee': assignees,
+              campaignID: req.body['Campaign ID'],
             },
           }
           airtableHelper.airtableCreate(data, 'Inbound Leads')
@@ -138,6 +144,7 @@ app.post('/SLS/SMS/origination', (req, res) => {
               'Lead Source (iMerchant Lead Source)': req.body['Lead Source'],
               'Lead Type (Vehicle)': tag,
               'Primary Asignee': response.fields['Primary Asignee'],
+              campaignID: req.body['Campaign ID'],
             },
           }
           airtableHelper.airtableCreate(data, 'Inbound Leads')
