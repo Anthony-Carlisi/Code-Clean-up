@@ -101,7 +101,7 @@ router.get('/', async (req, res) => {
         FirstName: nameOutput.first,
         MiddleName: nameOutput.middle,
         LastName: nameOutput.last,
-        phone: phone,
+        phone: phone.slice(1),
         company: companyName,
         OwnerId: userID,
         street: address,
