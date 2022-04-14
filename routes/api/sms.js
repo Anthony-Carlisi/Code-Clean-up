@@ -182,7 +182,7 @@ router.post('/origination', async (req, res) => {
       'Processing Status': 'New Lead',
       'Tag (Vendor)': [vendorId],
       'Lead Source (iMerchant Lead Source)': [leadSourceId],
-      // 'Lead Type (Vehicle)': tag,
+      'Lead Type (Vehicle)': ['recxpVfCHIqJCFTtG'],
       campaignID: campaignId,
     }
 
