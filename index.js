@@ -7,7 +7,7 @@ const express = require('express'),
   rico = require('./JS_Helper/RICOCHET_HELPER')
 //Scripts
 
-//Comment test test test
+//Comment
 const app = express()
 
 app.use(express.json({ extended: false }))
