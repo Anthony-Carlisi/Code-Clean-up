@@ -198,23 +198,6 @@ app.post('/RicoTagUpdate', (req, res) => {
   res.sendStatus(200).end()
 })
 
-//SEND SHM SMS RESPONSE TO SARAH
-app.post('/SHM/SMS', (req, res) => {
-  if (!filter.isProfane(req.body.message.body)) {
-    mailer.sendNotifications(
-      'sjuaidi@straighthomemortgage.com',
-      `New SHM Positive SMS Response by ${req.body.first_name} ${req.body.last_name} from number ${req.body.phone}`,
-      `First Name: ${req.body.first_name}
-      Last Name: ${req.body.last_name}
-      Phone Number: ${req.body.phone}
-      State: ${req.body.state}
-      City: ${req.body.city}
-      MESSAGE: ${req.body.message.body}`
-    )
-  }
-  res.status(200).end()
-})
-
 //ADD CCoupons LEADS TO INBOUND LEADS
 app.post('/SMS/ORIGINATION', (req, res) => {
   //  console.log(req);

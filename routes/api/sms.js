@@ -77,6 +77,9 @@ router.post('/origination', async (req, res) => {
       'Campaign ID': campaignId,
     } = req.body
     // Remove first two characters from phone +1
+
+    if (filter.isProfane(messageBody)) return res.send(`Profane language`)
+
     phone = phone.slice(2)
 
     if (messageType === 3)
