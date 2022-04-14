@@ -3,26 +3,30 @@ const express = require('express')
 const router = express.Router()
 const config = require('config')
 
-initConnect = async () => {
-  const conn = new jsforce.Connection({
-    loginUrl: 'https://login.salesforce.com',
-  })
+const conn = new jsforce.Connection({
+  loginUrl: 'https://login.salesforce.com',
+})
 
-  await conn.login(
-    config.get('salesforceEmail'),
-    config.get('salesforcePassword') + config.get('salesforceToken'),
-    (err, userInfo) => {
-      if (err) {
-        console.log(err)
-      }
+conn.login(
+  config.get('salesforceEmail'),
+  config.get('salesforcePassword') + config.get('salesforceToken'),
+  (err, userInfo) => {
+    if (err) {
+      console.log(err)
+    } else {
+      console.log('logged in')
     }
-  )
-}
+  }
+)
 
-router.get('/', async (req, res) => {
+
+//post lead to Salesforce
+router.post('/', async (req, res) => {
+  console.log(req.body)
   try {
     let {
       recordID,
+      createdDate,
       leadOwnerEmail,
       company,
       email,
@@ -33,32 +37,31 @@ router.get('/', async (req, res) => {
       city,
       state,
       zip,
-      industry,
-      requestedAmount,
       dba,
       phone,
       vendor,
       leadSource,
-    } = req.query
+      campaignID,
+      marketingMethod,
+      purchaseDate
+    } = req.body
 
-    console.log(leadOwnerEmail)
+    console.log(req.body)
 
     //search for agents userID
-    let userID = ''
-    await conn.query(
+    let userID = await conn.query(
       `SELECT id FROM User WHERE email = '${leadOwnerEmail}'`,
       (err, result) => {
         if (err) {
           console.log(err)
-          res.send("Error in query")
         } else {
           console.log('Total user records: ' + result.totalSize)
-          userID = result.records[0].Id
+          return result.records[0].Id
         }
       }
     )
 
-    console.log("User ID: " + userID)
+    // console.log('User ID: ' + userID)
 
     //create lead object
     await conn.sobject('Lead').create(
@@ -75,11 +78,14 @@ router.get('/', async (req, res) => {
         PostalCode: zip.substring(0, 5),
         email: email,
         McaApp__DBA_Name__c: dba,
-        McaApp__Amount_Requested__c: requestedAmount,
-        industry: industry,
-        // Lead_Vendor__c: vendor,
-        // CampaignID__c: '7018c000000xC4PAAU',
-        // LeadSource: 'Ricochet',
+        CreatedDate: createdDate,
+        LeadSource: "Inbound Leads",
+        ricoVendor__c: vendor,
+        ricoLeadSource__c: leadSource,
+        CampaignID__c: campaignID,
+        ricoMarketingMethod__c: marketingMethod[0],
+        ricoUploadDate__c: purchaseDate,
+        airtableRecId__c: recordID
       },
       function (err, ret) {
         if (err || !ret.success) return console.error(err, ret)
@@ -90,11 +96,14 @@ router.get('/', async (req, res) => {
     res.send('Your lead has been created in Salesforce.')
   } catch (error) {
     if (error.name == 'DUPLICATES_DETECTED') {
-      res.send('You are creating a DUPLICATE record in Salesforce')
+    //   res.status(900).send('You are creating a DUPLICATE record in Salesforce')
+      res.status(418).send('You are creating a DUPLICATE record in Salesforce')
     } else {
-      res.send(error)
+      res.status(400).send(error) //probably an input error
     }
   }
+  //   res.send('End of post')
 })
+
 
 module.exports = router

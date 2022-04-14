@@ -51,6 +51,7 @@ router.get('/', async (req, res) => {
       firstName,
       lastName,
       email,
+      campaignId
     } = req.query
 
     console.log(req.query)
@@ -109,7 +110,7 @@ router.get('/', async (req, res) => {
         state: state,
         PostalCode: zip.substring(0, 5),
         email: email,
-        CampaignID__c: '7018c000000xC4PAAU',
+        CampaignID__c: campaignId,
         ricoLeadSource__c: leadSource,
         ricoVendor__c: vendor,
         LeadSource: 'Ricochet',
