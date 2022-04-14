@@ -5,14 +5,17 @@ const express = require('express'),
   //Helper
   airtableHelper = require('./JS_Helper/AIRTABLE_HELPER'),
   rico = require('./JS_Helper/RICOCHET_HELPER'),
-  mailer = require('./JS_Helper/EMAIL_NOTIFICATION'),
-  jsforce = require('jsforce')
+  mailer = require('./JS_Helper/EMAIL_NOTIFICATION')
 //Scripts
 
 const app = express()
 
-//app.use(bodyParser.json())
 app.use(express.json({ extended: false }))
+app.use(
+  express.urlencoded({
+    extended: true,
+  })
+)
 app.use('/api/create', require('./routes/api/create'))
 app.use('/api/tokenScrub', require('./routes/api/tokenScrub'))
 app.use('/api/upload', require('./routes/api/upload'))
@@ -24,6 +27,8 @@ app.use(
 // app.use('/api/test', require('./routes/api/test'))
 app.use('/api/sfJotform', require('./routes/api/sfJotform'))
 app.use('/api/popCrumbs', require('./routes/api/popCrumbs'))
+app.use('/api/linkTracker', require('./routes/api/linkTracker'))
+app.use('/api/sms', require('./routes/api/sms'))
 
 filter.addWords(
   'not interested',
