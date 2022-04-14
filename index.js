@@ -4,10 +4,10 @@ const express = require('express'),
   filter = new Filter(),
   //Helper
   airtableHelper = require('./JS_Helper/AIRTABLE_HELPER'),
-  rico = require('./JS_Helper/RICOCHET_HELPER'),
-  mailer = require('./JS_Helper/EMAIL_NOTIFICATION')
+  rico = require('./JS_Helper/RICOCHET_HELPER')
 //Scripts
 
+//Comment I am looking for
 const app = express()
 
 app.use(express.json({ extended: false }))
