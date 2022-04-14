@@ -1,13 +1,11 @@
 //Modules Needed
-const express = require('express'),
-  Filter = require('bad-words'),
-  filter = new Filter(),
-  //Helper
-  airtableHelper = require('./JS_Helper/AIRTABLE_HELPER'),
-  rico = require('./JS_Helper/RICOCHET_HELPER')
-//Scripts
+const express = require('express')
+const Filter = require('bad-words')
+const filter = new Filter()
+const airtableHelper = require('./JS_Helper/AIRTABLE_HELPER')
+const rico = require('./JS_Helper/RICOCHET_HELPER')
 
-//  123
+//Middleware
 const app = express()
 
 app.use(express.json({ extended: false }))
@@ -16,19 +14,20 @@ app.use(
     extended: true,
   })
 )
+
+// Routes
 app.use('/api/create', require('./routes/api/create'))
 app.use('/api/tokenScrub', require('./routes/api/tokenScrub'))
 app.use('/api/upload', require('./routes/api/upload'))
 app.use('/api/ricoToSalesforce', require('./routes/api/ricoToSalesforce'))
-app.use(
-  '/api/airtableToSalesforce',
-  require('./routes/api/airtableToSalesforce')
-)
-// app.use('/api/test', require('./routes/api/test'))
 app.use('/api/sfJotform', require('./routes/api/sfJotform'))
 app.use('/api/popCrumbs', require('./routes/api/popCrumbs'))
 app.use('/api/linkTracker', require('./routes/api/linkTracker'))
 app.use('/api/sms', require('./routes/api/sms'))
+app.use(
+  '/api/airtableToSalesforce',
+  require('./routes/api/airtableToSalesforce')
+)
 
 filter.addWords(
   'not interested',
@@ -76,54 +75,6 @@ filter.addWords(
   'we never spoke',
   "Don't Bother"
 )
-
-//WeProcess Origination
-app.post('/WP/SMS/origination', (req, res) => {
-  console.log(req)
-  res.status(200).end()
-  let phoneNumberFormatted = req.body.phone.slice(2)
-  if (filter.isProfane(req.body.message.body)) {
-    console.log('Profane language found')
-  } else {
-    console.log('No profane language found')
-    airtableHelper
-      .airtableSearch3(
-        phoneNumberFormatted,
-        '{Mobile Phone Formatted}',
-        'Inbound Leads'
-      )
-      .then((response) => {
-        if (response === undefined) {
-          console.log('undefined')
-          data = {
-            fields: {
-              'Customer Response': req.body.message.body,
-              Email: req.body.email,
-              'Merchant First Name': req.body.first_name,
-              'Merchant Last Name': req.body.last_name,
-              'Mobile Phone': phoneNumberFormatted,
-              'Company Name': req.body.company_name,
-              'Agent Status': 'New Lead',
-              'Processing Status': 'New Lead',
-              'Tag (Vendor)': req.body.Vendor,
-              'Lead Source (iMerchant Lead Source)': req.body['Lead Source'],
-              'Lead Type (Vehicle)': 'ConnInc SMS We Process',
-            },
-          }
-          airtableHelper.airtableCreate(data, 'Inbound Leads')
-        } else {
-          console.log('defined')
-          data = {
-            'Customer Response':
-              response.fields['Customer Response'] +
-              ' \n ' +
-              req.body.message.body,
-          }
-          airtableHelper.airtableUpdate(data, response.id, 'Inbound Leads')
-        }
-      })
-  }
-})
 
 // function Recycle() {
 //   airtableHelper.airtableSearch5().then((response) => {

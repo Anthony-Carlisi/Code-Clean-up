@@ -59,6 +59,7 @@ filter.addWords(
 router.post('/origination', async (req, res) => {
   try {
     // Deconstruct object from Ricochet
+
     let {
       'Lead Source': leadSource,
       Vendor: vendor,
@@ -74,12 +75,17 @@ router.post('/origination', async (req, res) => {
       address1: address,
       state,
       city,
+      location: { name: locationName },
       'Campaign ID': campaignId,
     } = req.body
     // Remove first two characters from phone +1
 
     if (filter.isProfane(messageBody)) return res.send(`Profane language`)
 
+    const leadTypeId =
+      locationName === 'We Process'
+        ? ['recYN3IouIGLcYnNm']
+        : ['recxpVfCHIqJCFTtG']
     phone = phone.slice(2)
 
     if (messageType === 3)
@@ -163,7 +169,8 @@ router.post('/origination', async (req, res) => {
       'Grid view'
     )
 
-    const leadSourceId = leadSourceInfo[0].id
+    let leadSourceId
+    if (leadSourceInfo?.length > 0) leadSourceId = [leadSourceInfo[0].id]
 
     const vendorInfo = await airtableHelper.airtableSearch(
       'Vendor List',
@@ -184,8 +191,8 @@ router.post('/origination', async (req, res) => {
       'Agent Status': 'New Lead',
       'Processing Status': 'New Lead',
       'Tag (Vendor)': [vendorId],
-      'Lead Source (iMerchant Lead Source)': [leadSourceId],
-      'Lead Type (Vehicle)': ['recxpVfCHIqJCFTtG'],
+      'Lead Source (iMerchant Lead Source)': leadSourceId,
+      'Lead Type (Vehicle)': leadTypeId,
       campaignID: campaignId,
     }
 
