@@ -3,6 +3,7 @@ module.exports = {
     {
       name: 'backend-app',
       script: './server.js',
+      ignore_watch: ['temp'],
       watch: true,
       force: true,
       env: {
