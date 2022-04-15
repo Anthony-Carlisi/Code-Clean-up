@@ -205,7 +205,7 @@ router.post('/origination', async (req, res) => {
   }
 })
 
-router.post('/shm', async (req, res) => {
+router.post('/weprocess', async (req, res) => {
   try {
     // Deconstruct object from Ricochet
 
