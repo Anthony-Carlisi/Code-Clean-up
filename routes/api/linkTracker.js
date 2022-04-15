@@ -6,7 +6,7 @@ const { google } = require('googleapis')
 const crypto = require('crypto')
 
 const auth = new google.auth.GoogleAuth({
-  keyFile: 'keys.json', //the key file
+  keyFile: '/config/keys.json', //the key file
   //url to spreadsheets API
   scopes: 'https://www.googleapis.com/auth/spreadsheets',
 })
