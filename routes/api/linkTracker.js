@@ -20,19 +20,15 @@ router.post('/', async (req, res) => {
     let {
       date,
       name,
-      mobilePhone,
-      businessName,
-      fico,
-      amountRequested,
-      annualSales,
-      businessType,
-      pageName,
-      url,
-      variant,
-      ip,
-      id,
+      phone,
+      email,
+      company,
+      state,
+      source,
+      purchaseDate,
+      leadSource,
     } = req.body
-    mobilePhone = mobilePhone.replace(/-/g, '')
+    phone = phone.replace(/-/g, '')
 
     const authClientObject = await auth.getClient()
 
@@ -46,45 +42,50 @@ router.post('/', async (req, res) => {
     const readData = await googleSheetsInstance.spreadsheets.values.get({
       auth, //auth object
       spreadsheetId, // spreadsheet id
-      range: 'Link Opens!A:A', //range of cells to read from.
+      range: 'Leads!D:D', //range of cells to read from.
     })
 
-    //send the data reae with the response
-    console.log(readData.data)
+    const prevEmails = readData.data.values
+
+    let check = 0
+    prevEmails.map((prevEmail) => {
+      if (prevEmail[0] === email) check = check + 1
+    })
+    if (check > 0) return res.send(`This Lead is a Dup Block`)
+
     // Next Row
     const newRowNum = readData.data.values.length + 1
 
+    const linkId = crypto.randomUUID()
+
+    const link = `https://api.straightlinesource.com/t/${linkId}`
     //write data into the google sheets
     await googleSheetsInstance.spreadsheets.values.append({
       auth, //auth object
       spreadsheetId, //spreadsheet id
-      range: `Link Opens!A${newRowNum}:K${newRowNum}`, //sheet name and range of cells
+      range: `Leads!A${newRowNum}:I${newRowNum}`, //sheet name and range of cells
       valueInputOption: 'USER_ENTERED', // The information will be passed according to what the usere passes in as date, number or text
       resource: {
         values: [
           [
             date,
             name,
-            mobilePhone,
-            businessName,
-            fico,
-            amountRequested,
-            annualSales,
-            businessType,
-            pageName,
-            url,
-            variant,
-            ip,
-            id,
+            phone,
+            email,
+            company,
+            state,
+            source,
+            purchaseDate,
+            leadSource,
+            linkId,
+            link,
           ],
         ],
       },
     })
 
-    console.log(crypto.randomUUID())
-
     //Dup Blocking
-    const dupCheck = await dupBlockerCheck([mobilePhone])
+    const dupCheck = await dupBlockerCheck([phone])
     if (dupCheck?.length > 0) {
       console.log(dupCheck[0][0]._table.name)
       return res.send(`This Lead is a Dup Block`)
