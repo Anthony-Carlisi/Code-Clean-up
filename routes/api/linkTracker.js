@@ -5,18 +5,35 @@ const airtableHelper = require('../../hooks/airtableHelper.js')
 const { google } = require('googleapis')
 const crypto = require('crypto')
 
+// Utility Functions
+
+// Initiates the Google Auth
 const auth = new google.auth.GoogleAuth({
   keyFile: 'config/keys.json', //the key file
   //url to spreadsheets API
   scopes: 'https://www.googleapis.com/auth/spreadsheets',
 })
 
+// Turns Google Sheets API Batch Data into an Object
+const tableObj = (data) => {
+  var batchRowValues = data['valueRanges'][0]['values']
+  var rows = []
+  for (var i = 1; i < batchRowValues.length; i++) {
+    var rowObject = {}
+    for (var j = 0; j < batchRowValues[i].length; j++) {
+      rowObject[batchRowValues[0][j]] = batchRowValues[i][j]
+    }
+    rows.push(rowObject)
+  }
+  return rows
+}
+
 // @route   Post api/linkTracker
 // @desc    Create unique IDs for tracking per lead
 // @access  Public
 router.post('/', async (req, res) => {
   try {
-    // Deconstruct object from Ricochet
+    // Deconstruct object from Google Apps Script Post
     let {
       date,
       name,
@@ -36,11 +53,13 @@ router.post('/', async (req, res) => {
 
     // Auth with Google API
     const authClientObject = await auth.getClient()
+
     // Declare the API
     const googleSheetsInstance = google.sheets({
       version: 'v4',
       auth: authClientObject,
     })
+
     // What spreadsheet to edit
     const spreadsheetId = '1tVc8cYS_724wem4gr5bcDuNCTSRQXfAwa-6YsyStfvA'
 
@@ -57,7 +76,7 @@ router.post('/', async (req, res) => {
     // Checking to see if email already exists within the list
     let check = 0
     prevEmails.map((prevEmail) => {
-      if (prevEmail[0] === email) check = check + 1
+      if (prevEmail[0] === email) return res.send(`This Lead is a Dup Block`)
     })
     if (check > 0) return res.send(`This Lead is a Dup Block`)
 
@@ -66,7 +85,7 @@ router.post('/', async (req, res) => {
 
     // Creates unique IDs per lead
     const linkId = crypto.randomUUID({ disableEntropyCache: true })
-    // console.log(linkId)
+
     // Link to track
     const link = `https://api.straightlinesource.com/api/linkTracker/t/${linkId}`
 
@@ -106,39 +125,50 @@ router.post('/', async (req, res) => {
 router.get('/t/:id', async (req, res) => {
   try {
     console.log(req.params.id)
+
     const trackerId = req.params.id
 
     // Auth with Google API
     const authClientObject = await auth.getClient()
+
     // Declare the API
     const googleSheetsInstance = google.sheets({
       version: 'v4',
       auth: authClientObject,
     })
+
     // What spreadsheet to edit
     const spreadsheetId = '1tVc8cYS_724wem4gr5bcDuNCTSRQXfAwa-6YsyStfvA'
 
     // Reading from a spreadsheet
-    const readData = await googleSheetsInstance.spreadsheets.values.batchGet({
+    const readData = await googleSheetsInstance.spreadsheets.values.get({
       auth, //auth object
       spreadsheetId, // spreadsheet id
-      ranges: ['Leads!A:K'], //range of cells to read from.
+      range: 'Leads!K:K', //range of cells to read from.
     })
 
-    const tableObj = () => {
-      var batchRowValues = readData.data['valueRanges'][0]['values']
-      var rows = []
-      for (var i = 1; i < batchRowValues.length; i++) {
-        var rowObject = {}
-        for (var j = 0; j < batchRowValues[i].length; j++) {
-          rowObject[batchRowValues[0][j]] = batchRowValues[i][j]
-        }
-        rows.push(rowObject)
+    const idArray = readData.data.values
+
+    console.log(idArray.length)
+    let idRowIndex = 0
+    for (i = 0; i < idArray.length; i++) {
+      // console.log(idArray[i][0])
+      if (idArray[i][0] === trackerId) {
+        // console.log(i)
+        idRowIndex = i
+        // return
       }
-      return rows
     }
 
-    console.log(tableObj())
+    console.log(idRowIndex)
+
+    // console.log(i)
+    // const leadTriggered = idArray.filter((id, index) => {
+    //   if (id[0] === trackerId) {
+    //     console.log(index)
+    //     return index + 1
+    //   }
+    // })
 
     res.redirect('https://straightlinesource.com/')
   } catch (err) {
