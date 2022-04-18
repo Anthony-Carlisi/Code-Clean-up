@@ -300,7 +300,7 @@ router.get('/t/:id', async (req, res) => {
     }
 
     // Redirect when Completed
-    res.redirect('https://straightlinesource.com/')
+    res.redirect('https://straightlinesource.com/thankyou/')
   } catch (err) {
     console.error(err.message)
     res.status(500).send('Server Error')
