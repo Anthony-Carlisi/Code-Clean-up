@@ -249,7 +249,7 @@ router.get('/t/:id', async (req, res) => {
       const newLinkClickEmail = agentEmails.map(async (agentEmail) => {
         const emailAgent = await emailNotification.sendNotification(
           `${agentEmail}`,
-          `LINK TRACKING CLICK UPDATE ${leadTypeName} ${merchantName} ${email} ${mobilePhone}`,
+          `Your lead has clicked your link again ${leadTypeName} ${merchantName} ${email} ${mobilePhone}`,
           `
           You have an Updated ${leadTypeName} in your Stacker 'Hot Leads' table.
           Merchant Name: ${merchantName}
