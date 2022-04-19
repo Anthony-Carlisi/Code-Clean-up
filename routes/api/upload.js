@@ -180,7 +180,9 @@ router.post('/airtableScrub', uploadFile.single('file'), async (req, res) => {
     // Change Email info
     sendNotifications(
       sendToEmail,
-      `AIRTABLE SCRUB: ${req.file.originalname} - ${new Date().toLocaleString()}`,
+      `AIRTABLE SCRUB: ${
+        req.file.originalname
+      } - ${new Date().toLocaleString()}`,
       'Airtable Scrub Results',
       attachments
     ).then(() => {

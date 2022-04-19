@@ -2,4 +2,4 @@
 
 cd /var/opt/Code-Clean-up
 
-git pull orgin master
+git pull origin master
