@@ -292,7 +292,9 @@ router.get('/t/:id', async (req, res) => {
         'Processing Status': 'New Lead',
         // 'Tag (Vendor)': [vendorId],
         'Lead Source (iMerchant Lead Source)': [leadSourceId],
-        'Lead Type (Vehicle)': ['recVrOPey5ks1gkcY'],
+
+        // Hard encoded Clicks Marketing Data
+        'Lead Type (Vehicle)': ['reca3n32RNvnWqp7a'],
         // campaignID: campaignId,
       }
 
