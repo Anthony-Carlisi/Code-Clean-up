@@ -49,8 +49,8 @@ router.post('/', async (req, res) => {
     } = req.body
     phone = phone.replace(/-/g, '')
 
-    //Dup Blocking
-    const dupCheck = await dupBlockerCheck([phone])
+    //Dup Blocking Checking by phone number
+    const dupCheck = await dupBlockerCheck.dupBlockerCheckPhones([phone])
     if (dupCheck?.length > 0) return res.send(`This Lead is a Dup Block`)
 
     // Auth with Google API
@@ -89,7 +89,7 @@ router.post('/', async (req, res) => {
     const linkId = crypto.randomUUID({ disableEntropyCache: true })
 
     // Link to track
-    const link = `https://api.straightlinesource.com/api/linkTracker/t/${linkId}`
+    const link = `https://api.straightlinesource.com/api/link/t/${linkId}`
 
     // Write data into the google sheets
     await googleSheetsInstance.spreadsheets.values.append({

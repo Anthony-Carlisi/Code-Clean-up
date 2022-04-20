@@ -1,7 +1,7 @@
 const airtableHelper = require('./airtableHelper.js')
 const emailNotification = require('./emailNotifications')
 
-const dupBlockerCheckPhones = async (phoneNumbers) => {
+module.exports = dupBlockerCheck = async (phoneNumbers) => {
   try {
     const dupCheckPromises = phoneNumbers.map(async (phoneNumber) => {
       const digitsToRemove = phoneNumber.toString().length - 10
@@ -89,7 +89,7 @@ const dupBlockerCheckPhones = async (phoneNumbers) => {
     console.log(error)
   }
 }
-const dupBlockerCheckEmails = async (emails) => {
+module.exports = dupBlockerCheckEmails = async (emails) => {
   try {
     const dupCheckPromises = emails.map(async (email) => {
       // Merchant Records Scrubbing tool table check using Phone Number
@@ -173,9 +173,4 @@ const dupBlockerCheckEmails = async (emails) => {
   } catch (error) {
     console.log(error)
   }
-}
-
-module.exports = {
-  dupBlockerCheckEmails,
-  dupBlockerCheckPhones,
 }

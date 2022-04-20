@@ -51,7 +51,7 @@ router.get('/', async (req, res) => {
       firstName,
       lastName,
       email,
-      campaignId
+      campaignId,
     } = req.query
 
     console.log(req.query)
@@ -90,9 +90,9 @@ router.get('/', async (req, res) => {
         }
       }
     )
-    
+
     //check for airtable duplicates
-    let dupATCheck = await dupBlockerCheck([phone])
+    let dupATCheck = await dupBlockerCheck.dupBlockerCheckPhones([phone])
     if (dupATCheck?.length > 0)
       return res.send(`This Lead is a Dup Block in Stacker`)
 

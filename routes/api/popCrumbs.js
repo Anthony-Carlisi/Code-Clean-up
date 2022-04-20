@@ -32,7 +32,7 @@ router.post('/', async (req, res) => {
     })
 
     // Checking to see if record is a dupBlock
-    const dupCheck = await dupBlockerCheck(phoneArray)
+    const dupCheck = await dupBlockerCheck.dupBlockerCheckPhones(phoneArray)
 
     // if DupBlock does exist
     if (dupCheck?.length > 0) return res.send(`This Lead is a Dup Block`)
