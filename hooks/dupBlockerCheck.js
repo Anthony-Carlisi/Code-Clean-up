@@ -14,6 +14,9 @@ const dupBlockerCheckPhones = async (phoneNumbers) => {
         'Scrubbing Tool'
       )
 
+      // If records is found
+      if (dupRecordCheck?.length > 0) return dupRecordCheck
+
       // Funded Deals letting seniors know that merchant is shopping
       let seniorAgentsNameArray = []
       for (i = 0; i < dupRecordCheck.length; i++) {
@@ -67,9 +70,6 @@ const dupBlockerCheckPhones = async (phoneNumbers) => {
       //Sends emails to all reciptiants
       await Promise.all(seniorDupBlockNotificationPromises)
 
-      // If records is found
-      if (dupRecordCheck?.length > 0) return dupRecordCheck
-
       // Inbound Leads Scrubbing tool table check using Phone Number
       const dupRecordCheckInbound = await airtableHelper.airtableSearch(
         'Inbound Leads',
@@ -99,58 +99,61 @@ const dupBlockerCheckEmails = async (emails) => {
         'Scrubbing Tool'
       )
 
-      // // Funded Deals letting seniors know that merchant is shopping
-      // let seniorAgentsNameArray = []
-      // for (i = 0; i < dupRecordCheck.length; i++) {
-      //   if (dupRecordCheck[i].fields.Status === 'Funded') {
-      //     let seniorAgentsNames =
-      //       dupRecordCheck[i].fields['Senior (from Primary Assignee)']
-      //     if (seniorAgentsNames == undefined)
-      //       //if no senior found, add the primary
-      //       seniorAgentsNames = dupRecordCheck[i].fields['Primary Assignee'] //this will return a recID not a name
-      //     for (a = 0; a < seniorAgentsNames.length; a++) {
-      //       let dupObj = {
-      //         mid: dupRecordCheck[i].fields.MID,
-      //         name: seniorAgentsNames[a],
-      //       }
-      //       seniorAgentsNameArray.push(dupObj)
-      //     }
-      //   }
-      // }
+      // If records is found
+      if (dupRecordCheck?.length > 0) return dupRecordCheck
 
-      // // Get the Email addresses of each senior agent if multiple
-      // const seniorAgentsEmailsPromises = seniorAgentsNameArray.map(
-      //   async (seniorName) => {
-      //     const seniorAgentEmailSearch = await airtableHelper.airtableSearch(
-      //       'Agent Table',
-      //       `OR({Name} = '${seniorName.name}', RECORD_ID() = '${seniorName.name}')`, //check for name if there is a senior, if not search for recID
-      //       'Grid view'
-      //     )
-      //     if (seniorAgentEmailSearch[0].fields.Email)
-      //       return {
-      //         mid: seniorName.mid,
-      //         email: seniorAgentEmailSearch[0].fields.Email,
-      //       }
-      //   }
-      // )
+      // Funded Deals letting seniors know that merchant is shopping
+      let seniorAgentsNameArray = []
+      for (i = 0; i < dupRecordCheck.length; i++) {
+        if (dupRecordCheck[i].fields.Status === 'Funded') {
+          let seniorAgentsNames =
+            dupRecordCheck[i].fields['Senior (from Primary Assignee)']
+          if (seniorAgentsNames == undefined)
+            //if no senior found, add the primary
+            seniorAgentsNames = dupRecordCheck[i].fields['Primary Assignee'] //this will return a recID not a name
+          for (a = 0; a < seniorAgentsNames.length; a++) {
+            let dupObj = {
+              mid: dupRecordCheck[i].fields.MID,
+              name: seniorAgentsNames[a],
+            }
+            seniorAgentsNameArray.push(dupObj)
+          }
+        }
+      }
 
-      // //Promise returning all emails to notify
-      // const seniorAgentsEmails = await Promise.all(seniorAgentsEmailsPromises)
+      // Get the Email addresses of each senior agent if multiple
+      const seniorAgentsEmailsPromises = seniorAgentsNameArray.map(
+        async (seniorName) => {
+          const seniorAgentEmailSearch = await airtableHelper.airtableSearch(
+            'Agent Table',
+            `OR({Name} = '${seniorName.name}', RECORD_ID() = '${seniorName.name}')`, //check for name if there is a senior, if not search for recID
+            'Grid view'
+          )
+          if (seniorAgentEmailSearch[0].fields.Email)
+            return {
+              mid: seniorName.mid,
+              email: seniorAgentEmailSearch[0].fields.Email,
+            }
+        }
+      )
 
-      // //Promises created to create the emails to send out
-      // const seniorDupBlockNotificationPromises = seniorAgentsEmails.map(
-      //   async (seniorEmail) => {
-      //     const emailAgent = await emailNotification.sendNotification(
-      //       `${seniorEmail.email}`,
-      //       `Dup Block Notification for Funded Deal ${seniorEmail.mid}`,
-      //       `Your Deal ${seniorEmail.mid} Has triggered a Dup Block Your Merchant Appears to be Shopping`
-      //     )
-      //     if (emailAgent) return emailAgent
-      //   }
-      // )
+      //Promise returning all emails to notify
+      const seniorAgentsEmails = await Promise.all(seniorAgentsEmailsPromises)
 
-      // //Sends emails to all reciptiants
-      // await Promise.all(seniorDupBlockNotificationPromises)
+      //Promises created to create the emails to send out
+      const seniorDupBlockNotificationPromises = seniorAgentsEmails.map(
+        async (seniorEmail) => {
+          const emailAgent = await emailNotification.sendNotification(
+            `${seniorEmail.email}`,
+            `Dup Block Notification for Funded Deal ${seniorEmail.mid}`,
+            `Your Deal ${seniorEmail.mid} Has triggered a Dup Block Your Merchant Appears to be Shopping`
+          )
+          if (emailAgent) return emailAgent
+        }
+      )
+
+      //Sends emails to all reciptiants
+      await Promise.all(seniorDupBlockNotificationPromises)
 
       // If records is found
       if (dupRecordCheck?.length > 0) return dupRecordCheck
