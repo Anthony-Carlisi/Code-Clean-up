@@ -1,6 +1,8 @@
 const jsforce = require('jsforce')
 const express = require('express')
 const router = express.Router()
+const airtableHelper = require('../../hooks/airtableHelper.js')
+const emailNotifications = require('../../hooks/emailNotifications.js')
 const config = require('config')
 
 const conn = new jsforce.Connection({
@@ -44,6 +46,11 @@ router.post('/', async (req, res) => {
       marketingMethod,
       purchaseDate,
     } = req.body
+
+    if (leadOwnerEmail[0] == 'mdell@slsbiz.com')
+      leadOwnerEmail[0] = 'mdell@straightlinesource.com'
+    if (leadOwnerEmail[0] == 'cbrumber@slsbiz.com')
+      leadOwnerEmail[0] = 'cbrumber@straightlinesource.com'
 
     //search for agents userID
     let userID = await conn.query(
@@ -127,13 +134,19 @@ router.post('/VSS', async (req, res) => {
       purchaseDate,
     } = req.body
 
-    // console.log(req.body)
+    //pass an array of numbers
+    // await checkInMerchRecs([phone, mobile])
 
     //search for agents userID
     let slsUser
     for (let i = 0; i < leadOwnerEmail.length; i++) {
-      if (leadOwnerEmail[i] == 'mdell@slsbiz.com') leadOwnerEmail[i] = 'mdell@straightlinesource.com';
-      if (leadOwnerEmail[i] == 'cbrumber@slsbiz.com') leadOwnerEmail[i] = 'cbrumber@straightlinesource.com';
+      //correct for emails
+      if (leadOwnerEmail[i] == 'mdell@slsbiz.com')
+        leadOwnerEmail[i] = 'mdell@straightlinesource.com'
+      if (leadOwnerEmail[i] == 'cbrumber@slsbiz.com')
+        leadOwnerEmail[i] = 'cbrumber@straightlinesource.com'
+
+      //search for SLS user in SF
       slsUser = await conn.query(
         `SELECT id FROM User WHERE email = '${leadOwnerEmail[i]}'`,
         (err, result) => {
@@ -153,8 +166,9 @@ router.post('/VSS', async (req, res) => {
         }
       )
       if (slsUser != undefined) {
+        // if agent found break out of for loop
         break
-      } // if agent found break out of for loop
+      }
     }
 
     let vssAgentName =
@@ -198,10 +212,38 @@ router.post('/VSS', async (req, res) => {
     if (error.name == 'DUPLICATES_DETECTED') {
       res.status(418).send('You are creating a DUPLICATE record in Salesforce')
     } else {
+      console.log(error)
       res.status(900).send(error) //probably an input format error
     }
   }
   // //   res.send('End of post')
 })
+
+async function checkInMerchRecs(phoneNumbers, leadOwnerEmail) {
+  let duplicates = []
+
+  for (let p of phoneNumbers) {
+    let result = await airtableHelper.airtableSearch(
+      'Merchant Records',
+      `OR({Business Phone Text} = ${p}, {Owner 1 Mobile Text} = ${p})`,
+      'Scrubbing Tool'
+    )
+
+    if (result.length > 0) {
+      for (let res of result) {
+        duplicates.push(res)
+      }
+    }
+  }
+
+  // console.log(duplicates)
+  for (let dup of duplicates) {
+    console.log(dup.fields['Merchant 1 Full Name'])
+  }
+
+  if (duplicates.length > 0) {
+    await emailNotifications.sendNotification(leadOwnerEmail, `Dupblocked Lead`)
+  }
+}
 
 module.exports = router
