@@ -92,6 +92,14 @@ const dupBlockerCheckPhones = async (phoneNumbers) => {
 const dupBlockerCheckEmails = async (emails) => {
   try {
     const dupCheckPromises = emails.map(async (email) => {
+      if (
+        email === 'noemail@gmail.com' ||
+        email === 'noemail@noemail.com' ||
+        email === 'none@gmail.com' ||
+        email === 'no-email@gmail.com'
+      ) {
+        return undefined
+      }
       // Merchant Records Scrubbing tool table check using Phone Number
       const dupRecordCheck = await airtableHelper.airtableSearch(
         'Merchant Records',
