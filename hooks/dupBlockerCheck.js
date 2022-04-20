@@ -95,7 +95,7 @@ const dupBlockerCheckEmails = async (emails) => {
       // Merchant Records Scrubbing tool table check using Phone Number
       const dupRecordCheck = await airtableHelper.airtableSearch(
         'Merchant Records',
-        `OR({Email 1} = ${email}, {Owner 2 Email} = ${email})`,
+        `OR({Email 1} = '${email}', {Owner 2 Email} = '${email}')`,
         'Scrubbing Tool'
       )
 
@@ -158,7 +158,7 @@ const dupBlockerCheckEmails = async (emails) => {
       // Inbound Leads Scrubbing tool table check using Emails
       const dupRecordCheckInbound = await airtableHelper.airtableSearch(
         'Inbound Leads',
-        `{Email} = ${email}`,
+        `{Email} = '${email}'`,
         'Scrubbing Tool'
       )
 

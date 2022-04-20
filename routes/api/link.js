@@ -50,8 +50,12 @@ router.post('/', async (req, res) => {
     phone = phone.replace(/-/g, '')
 
     //Dup Blocking Checking by phone number
-    const dupCheck = await dupBlockerCheck.dupBlockerCheckPhones([phone])
-    if (dupCheck?.length > 0) return res.send(`This Lead is a Dup Block`)
+    const dupCheckPhone = await dupBlockerCheck.dupBlockerCheckPhones([phone])
+    if (dupCheckPhone?.length > 0) return res.send(`This Lead is a Dup Block`)
+
+    //Dup Blocking Checking by email
+    const dupCheckEmail = await dupBlockerCheck.dupBlockerCheckEmails([email])
+    if (dupCheckEmail?.length > 0) return res.send(`This Lead is a Dup Block`)
 
     // Auth with Google API
     const authClientObject = await auth.getClient()
@@ -76,11 +80,10 @@ router.post('/', async (req, res) => {
     const prevEmails = readData.data.values
 
     // Checking to see if email already exists within the list
-    let check = 0
-    prevEmails.map((prevEmail) => {
-      if (prevEmail[0] === email) return res.send(`This Lead is a Dup Block`)
-    })
-    if (check > 0) return res.send(`This Lead is a Dup Block`)
+    for (i = 0; i < prevEmails.length; i++) {
+      if (prevEmails[i][0] === email)
+        return res.send(`This Lead is a Dup Block`)
+    }
 
     // Next Row
     const newRowNum = readData.data.values.length + 1

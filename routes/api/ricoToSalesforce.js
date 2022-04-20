@@ -96,6 +96,11 @@ router.get('/', async (req, res) => {
     if (dupATCheck?.length > 0)
       return res.send(`This Lead is a Dup Block in Stacker`)
 
+    //check for airtable duplicates Emails
+    let dupATCheckEmails = await dupBlockerCheck.dupBlockerCheckEmails([email])
+    if (dupATCheckEmails?.length > 0)
+      return res.send(`This Lead is a Dup Block in Stacker`)
+
     //create lead object
     await conn.sobject('Lead').create(
       {
