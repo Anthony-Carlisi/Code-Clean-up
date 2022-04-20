@@ -132,6 +132,8 @@ router.post('/VSS', async (req, res) => {
     //search for agents userID
     let slsUser
     for (let i = 0; i < leadOwnerEmail.length; i++) {
+      if (leadOwnerEmail[i] == 'mdell@slsbiz.com') leadOwnerEmail[i] = 'mdell@straightlinesource.com';
+      if (leadOwnerEmail[i] == 'cbrumber@slsbiz.com') leadOwnerEmail[i] = 'cbrumber@straightlinesource.com';
       slsUser = await conn.query(
         `SELECT id FROM User WHERE email = '${leadOwnerEmail[i]}'`,
         (err, result) => {
