@@ -54,7 +54,7 @@ router.get('/', async (req, res) => {
       campaignId,
     } = req.query
 
-    console.log(req.query)
+    // console.log(req.query)
 
     //full name might be in first name field so split it and distribute
     let names = firstName.split(' ')
