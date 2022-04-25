@@ -21,31 +21,35 @@ conn.login(
   }
 )
 
-//post lead to Salesforce
+//post Non-VSS lead to Salesforce
 router.post('/', async (req, res) => {
-  // console.log(req.body)
+  let {
+    recordID,
+    createdDate,
+    leadOwnerEmail,
+    company,
+    email,
+    mobile,
+    firstName,
+    lastName,
+    streetAddress,
+    city,
+    state,
+    zip,
+    dba,
+    phone,
+    vendor,
+    leadSource,
+    campaignID,
+    marketingMethod,
+    purchaseDate,
+  } = req.body
+
   try {
-    let {
-      recordID,
-      createdDate,
-      leadOwnerEmail,
-      company,
-      email,
-      mobile,
-      firstName,
-      lastName,
-      streetAddress,
-      city,
-      state,
-      zip,
-      dba,
-      phone,
-      vendor,
-      leadSource,
-      campaignID,
-      marketingMethod,
-      purchaseDate,
-    } = req.body
+
+    //check if in Merchant Records duplicate list
+    if (await isInMerchRecs([phone, mobile], req.body))
+      return res.status(901).end()
 
     if (leadOwnerEmail[0] == 'mdell@slsbiz.com')
       leadOwnerEmail[0] = 'mdell@straightlinesource.com'
@@ -64,8 +68,6 @@ router.post('/', async (req, res) => {
         }
       }
     )
-
-    // console.log('User ID: ' + userID)
 
     //create lead object
     await conn.sobject('Lead').create(
@@ -92,7 +94,7 @@ router.post('/', async (req, res) => {
         airtableRecId__c: recordID,
       },
       function (err, ret) {
-        if (err || !ret.success) return console.error(err, ret)
+        if (err || !ret.success) return
         console.log('Created record id : ' + ret.id)
       }
     )
@@ -100,42 +102,55 @@ router.post('/', async (req, res) => {
     res.send('Your lead has been created in Salesforce.')
   } catch (error) {
     if (error.name == 'DUPLICATES_DETECTED') {
-      res.status(418).send('You are creating a DUPLICATE record in Salesforce')
+      console.error("Salesforce duplicate detected")
+      await emailNotifications.sendNotification(
+        leadOwnerEmail,
+        `Your lead "${company}" is a duplicate in Salesforce and was not added`,
+        `Phone: ${phone}\nMobile: ${mobile}\nEmail: ${email}`
+      )
+      res.status(418).end()
     } else {
-      res.status(900).send(error) //probably an input format error
+      console.error(error.message)
+      await emailNotifications.sendNotification(
+        leadOwnerEmail,
+        `There was a problem adding your lead "${company}"`,
+        `ERROR: ${error.message}\n\nPhone: ${phone}\nMobile: ${mobile}\nEmail: ${email}`
+      )
+      res.status(900).end() //probably an input format error
     }
   }
-  //   res.send('End of post')
 })
 
 //post VSS lead to Salesforce
 router.post('/VSS', async (req, res) => {
-  try {
-    let {
-      recordID,
-      createdDate,
-      leadOwnerEmail,
-      leadOwnerName,
-      company,
-      email,
-      mobile,
-      firstName,
-      lastName,
-      streetAddress,
-      city,
-      state,
-      zip,
-      dba,
-      phone,
-      vendor,
-      leadSource,
-      campaignID,
-      marketingMethod,
-      purchaseDate,
-    } = req.body
+  let {
+    recordID,
+    createdDate,
+    leadOwnerEmail,
+    leadOwnerName,
+    company,
+    email,
+    mobile,
+    firstName,
+    lastName,
+    streetAddress,
+    city,
+    state,
+    zip,
+    dba,
+    phone,
+    vendor,
+    leadSource,
+    campaignID,
+    marketingMethod,
+    purchaseDate,
+  } = req.body
 
-    //pass an array of numbers
-    // await checkInMerchRecs([phone, mobile])
+  try {
+
+    //check if in Merchant Records duplicate list
+    if (await isInMerchRecs([phone, mobile], req.body))
+      return res.status(901).end()
 
     //search for agents userID
     let slsUser
@@ -165,10 +180,7 @@ router.post('/VSS', async (req, res) => {
           }
         }
       )
-      if (slsUser != undefined) {
-        // if agent found break out of for loop
-        break
-      }
+      if (slsUser != undefined) break //if SLS agent found break out of for loop
     }
 
     let vssAgentName =
@@ -202,7 +214,7 @@ router.post('/VSS', async (req, res) => {
         airtableRecId__c: recordID,
       },
       function (err, ret) {
-        if (err || !ret.success) return console.error(err, ret)
+        if (err || !ret.success) return
         console.log('Created record id : ' + ret.id)
       }
     )
@@ -210,39 +222,57 @@ router.post('/VSS', async (req, res) => {
     res.send('Your lead has been created in Salesforce.')
   } catch (error) {
     if (error.name == 'DUPLICATES_DETECTED') {
-      res.status(418).send('You are creating a DUPLICATE record in Salesforce')
+      console.error("Salesforce duplicate detected")
+      await emailNotifications.sendNotification(
+        leadOwnerEmail,
+        `Your lead "${company}" is a duplicate in Salesforce and was not added`,
+        `Phone: ${phone}\nMobile: ${mobile}\nEmail: ${email}`
+      )
+      res.status(418).end()
     } else {
-      console.log(error)
-      res.status(900).send(error) //probably an input format error
+      console.error(error.message)
+      // console.log(companyX, leadOwnerEmailX)
+      await emailNotifications.sendNotification(
+        leadOwnerEmail,
+        `There was a problem adding your lead "${company}"`,
+        `ERROR: ${error.message}\n\nPhone: ${phone}\nMobile: ${mobile}\nEmail: ${email}`
+      )
+      res.status(900).end() //probably an input format error
     }
   }
-  // //   res.send('End of post')
 })
 
-async function checkInMerchRecs(phoneNumbers, leadOwnerEmail) {
+async function isInMerchRecs(phoneNumbers, query) {
   let duplicates = []
 
   for (let p of phoneNumbers) {
-    let result = await airtableHelper.airtableSearch(
-      'Merchant Records',
-      `OR({Business Phone Text} = ${p}, {Owner 1 Mobile Text} = ${p})`,
-      'Scrubbing Tool'
-    )
+    if (p != '') {
+      let result = await airtableHelper.airtableSearch(
+        'Merchant Records',
+        `OR({Business Phone Text} = ${p}, {Owner 1 Mobile Text} = ${p})`,
+        'Scrubbing Tool'
+      )
 
-    if (result.length > 0) {
-      for (let res of result) {
-        duplicates.push(res)
+      // console.log(result)
+      if (result.length > 0) {
+        for (let res of result) {
+          duplicates.push(res)
+        }
       }
     }
   }
 
-  // console.log(duplicates)
-  for (let dup of duplicates) {
-    console.log(dup.fields['Merchant 1 Full Name'])
-  }
-
+  // console.log(leadOwnerEmail)
   if (duplicates.length > 0) {
-    await emailNotifications.sendNotification(leadOwnerEmail, `Dupblocked Lead`)
+    await emailNotifications.sendNotification(
+      query.leadOwnerEmail,
+      `Your lead "${query.company}" is a duplicate in Stacker and was not added`,
+      `Phone: ${query.phone}\nMobile: ${query.mobile}\nEmail: ${query.email}`
+    )
+    console.error('Duplicate found in Merchant Records')
+    return true
+  } else {
+    return false
   }
 }
 
