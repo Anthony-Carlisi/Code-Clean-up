@@ -90,16 +90,38 @@ router.get('/', async (req, res) => {
         }
       }
     )
+    //Dup Blocking checking
+    const dupCheckPhoneMerchant = await dupBlockerCheck.dupCheck(
+      [phone],
+      'Merchant Records',
+      'phone'
+    )
+    if (dupCheckPhoneMerchant?.length > 0)
+      return res.send(`This Lead is a Dup Block`)
 
-    //check for airtable duplicates
-    let dupATCheck = await dupBlockerCheck.dupBlockerCheckPhones([phone])
-    if (dupATCheck?.length > 0)
-      return res.send(`This Lead is a Dup Block in Stacker`)
+    const dupCheckPhoneInbound = await dupBlockerCheck.dupCheck(
+      [phone],
+      'Inbound Leads',
+      'phone'
+    )
+    if (dupCheckPhoneInbound?.length > 0)
+      return res.send(`This Lead is a Dup Block`)
 
-    //check for airtable duplicates Emails
-    let dupATCheckEmails = await dupBlockerCheck.dupBlockerCheckEmails([email])
-    if (dupATCheckEmails?.length > 0)
-      return res.send(`This Lead is a Dup Block in Stacker`)
+    const dupCheckEmailMerchant = await dupBlockerCheck.dupCheck(
+      [email],
+      'Merchant Records',
+      'email'
+    )
+    if (dupCheckEmailMerchant?.length > 0)
+      return res.send(`This Lead is a Dup Block`)
+
+    const dupCheckEmailInbound = await dupBlockerCheck.dupCheck(
+      [email],
+      'Inbound Leads',
+      'email'
+    )
+    if (dupCheckEmailInbound?.length > 0)
+      return res.send(`This Lead is a Dup Block`)
 
     //create lead object
     await conn.sobject('Lead').create(

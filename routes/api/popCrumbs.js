@@ -31,19 +31,38 @@ router.post('/', async (req, res) => {
       return element !== ''
     })
 
-    // Checking to see if record is a dupBlock
-    const dupCheckPhone = await dupBlockerCheck.dupBlockerCheckPhones(
-      phoneArray
+    //Dup Blocking checking
+    const dupCheckPhoneMerchant = await dupBlockerCheck.dupCheck(
+      phoneArray,
+      'Merchant Records',
+      'phone'
     )
+    if (dupCheckPhoneMerchant?.length > 0)
+      return res.send(`This Lead is a Dup Block`)
 
-    // if DupBlock does exist
-    if (dupCheckPhone?.length > 0) return res.send(`This Lead is a Dup Block`)
+    const dupCheckPhoneInbound = await dupBlockerCheck.dupCheck(
+      phoneArray,
+      'Inbound Leads',
+      'phone'
+    )
+    if (dupCheckPhoneInbound?.length > 0)
+      return res.send(`This Lead is a Dup Block`)
 
-    // Checking to see if record is a dupBlock
-    const dupCheckEmail = await dupBlockerCheck.dupBlockerCheckEmails([email])
+    const dupCheckEmailMerchant = await dupBlockerCheck.dupCheck(
+      [email],
+      'Merchant Records',
+      'email'
+    )
+    if (dupCheckEmailMerchant?.length > 0)
+      return res.send(`This Lead is a Dup Block`)
 
-    // if DupBlock does exist
-    if (dupCheckEmail?.length > 0) return res.send(`This Lead is a Dup Block`)
+    const dupCheckEmailInbound = await dupBlockerCheck.dupCheck(
+      [email],
+      'Inbound Leads',
+      'email'
+    )
+    if (dupCheckEmailInbound?.length > 0)
+      return res.send(`This Lead is a Dup Block`)
 
     // New Object created for inbound leads
     const newLeadObj = {

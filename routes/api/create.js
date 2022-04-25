@@ -24,13 +24,38 @@ router.get('/', async (req, res) => {
       email,
     } = req.query
 
-    //Dup Blocking
-    const dupCheckPhone = await dupBlockerCheck.dupBlockerCheckPhones([phone])
-    if (dupCheckPhone?.length > 0) return res.send(`This Lead is a Dup Block`)
+    //Dup Blocking checking
+    const dupCheckPhoneMerchant = await dupBlockerCheck.dupCheck(
+      [phone],
+      'Merchant Records',
+      'phone'
+    )
+    if (dupCheckPhoneMerchant?.length > 0)
+      return res.send(`This Lead is a Dup Block`)
 
-    //Dup Blocking
-    const dupCheckEmail = await dupBlockerCheck.dupBlockerCheckEmails([email])
-    if (dupCheckEmail?.length > 0) return res.send(`This Lead is a Dup Block`)
+    const dupCheckPhoneInbound = await dupBlockerCheck.dupCheck(
+      [phone],
+      'Inbound Leads',
+      'phone'
+    )
+    if (dupCheckPhoneInbound?.length > 0)
+      return res.send(`This Lead is a Dup Block`)
+
+    const dupCheckEmailMerchant = await dupBlockerCheck.dupCheck(
+      [email],
+      'Merchant Records',
+      'email'
+    )
+    if (dupCheckEmailMerchant?.length > 0)
+      return res.send(`This Lead is a Dup Block`)
+
+    const dupCheckEmailInbound = await dupBlockerCheck.dupCheck(
+      [email],
+      'Inbound Leads',
+      'email'
+    )
+    if (dupCheckEmailInbound?.length > 0)
+      return res.send(`This Lead is a Dup Block`)
 
     // Find Assignee in Agent Table off Ricochet Assignee
     const findAssignees = await airtableHelper.airtableSearch(
