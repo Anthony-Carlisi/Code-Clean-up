@@ -97,7 +97,6 @@ const dupCheck = async (contactData, table, type) => {
     const results = resultsArray.filter((x) => {
       return x !== undefined
     })
-    console.log(results)
     return results //the list of objects that were dupblocked
   } catch (error) {
     console.log(error)

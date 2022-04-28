@@ -9,20 +9,6 @@ const conn = new jsforce.Connection({
   loginUrl: 'https://login.salesforce.com',
 })
 
-// initConnect = async () => {
-//     var conn = new jsforce.Connection({
-//       loginUrl: 'https://login.salesforce.com'
-//     });
-//     await conn.login(USER_ID, PASSWORD + SEC_TOKEN, (err, userInfo) => {
-//         if (err)
-//           console.log(err);
-//         else {
-//           console.log(userInfo.Id);
-//         }
-
-//       });
-//   }
-
 conn.login(
   config.get('salesforceEmail'),
   config.get('salesforcePassword') + config.get('salesforceToken'),
