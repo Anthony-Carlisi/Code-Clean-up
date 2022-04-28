@@ -25,7 +25,7 @@ const dupCheck = async (contactData, table, type) => {
       } else if (table === 'Inbound Leads' && type === 'phone') {
         query = `OR({Mobile Phone Formatted} = ${contact}, {Business Phone Formatted} = ${contact})`
       } else if (table === 'Inbound Leads' && type === 'email') {
-        query = `OR({Email 1} = '${contact}', {Owner 2 Email} = '${contact}')`
+        query = `{Email} = '${contact}')`
       }
 
       // Merchant Records Scrubbing tool table check using Phone Number
