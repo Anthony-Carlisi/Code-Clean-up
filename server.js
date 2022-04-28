@@ -1,5 +1,6 @@
 //Modules Needed
 const express = require('express')
+const rico = require('./hooks/RicochetHelperOld')
 
 //Middleware
 const app = express()
@@ -24,10 +25,10 @@ app.use(
   '/api/airtableToSalesforce',
   require('./routes/api/airtableToSalesforce')
 )
-// //UPDATE RICOCHET TAG
-// app.post('/RicoTagUpdate', (req, res) => {
-//   rico.RicoUpdateTag(req.body.id, req.body.tag)
-//   res.sendStatus(200).end()
-// })
+//UPDATE RICOCHET TAG
+app.post('/RicoTagUpdate', (req, res) => {
+  rico.RicoUpdateTag(req.body.id, req.body.tag)
+  res.sendStatus(200).end()
+})
 
 app.listen(process.env.PORT || 4000)
