@@ -20,10 +20,8 @@ app.use('/api/sfJotform', require('./routes/api/sfJotform'))
 app.use('/api/popCrumbs', require('./routes/api/popCrumbs'))
 app.use('/api/link', require('./routes/api/link'))
 app.use('/api/sms', require('./routes/api/sms'))
-app.use(
-  '/api/airtableToSalesforce',
-  require('./routes/api/airtableToSalesforce')
-)
+app.use('/api/airtableToSalesforce', require('./routes/api/airtableToSalesforce'))
+app.use('/api/jotformSLSLandingPage', require('./routes/api/jotformSLSLandingPage'))
 // //UPDATE RICOCHET TAG
 // app.post('/RicoTagUpdate', (req, res) => {
 //   rico.RicoUpdateTag(req.body.id, req.body.tag)
