@@ -129,7 +129,6 @@ router.get('/', async (req, res) => {
 
     // If records is found to bed updated
     if (updateRecordCheck?.length > 0) {
-      //console.log(updateRecordCheck[0].fields)
       const updatedLead = await airtableHelper.airtableUpdate(
         'Merchant Records',
         updateRecordCheck[0].id,

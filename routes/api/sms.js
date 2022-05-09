@@ -319,7 +319,12 @@ router.post('/weprocess', async (req, res) => {
       'Grid view'
     )
 
-    const vendorId = vendorInfo[0].id
+    let vendorId
+    if (typeof vendor !== 'undefined') {
+      vendorId = vendorInfo[0].id ?? 'recQnolOg6hJU4OZF'
+    } else {
+      vendorId = 'recQnolOg6hJU4OZF'
+    }
 
     //  Create Object to send to Airtable
     const airtableLead = {

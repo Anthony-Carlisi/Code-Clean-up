@@ -25,7 +25,7 @@ const dupCheck = async (contactData, table, type) => {
       } else if (table === 'Inbound Leads' && type === 'phone') {
         query = `OR({Mobile Phone Formatted} = ${contact}, {Business Phone Formatted} = ${contact})`
       } else if (table === 'Inbound Leads' && type === 'email') {
-        query = `OR({Email 1} = '${contact}', {Owner 2 Email} = '${contact}')`
+        query = `SEARCH('${contact}', {Email})`
       }
 
       // Merchant Records Scrubbing tool table check using Phone Number
@@ -97,7 +97,6 @@ const dupCheck = async (contactData, table, type) => {
     const results = resultsArray.filter((x) => {
       return x !== undefined
     })
-    console.log(results)
     return results //the list of objects that were dupblocked
   } catch (error) {
     console.log(error)
