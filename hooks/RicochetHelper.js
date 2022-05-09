@@ -17,8 +17,6 @@ const RicoUpdateTag = async (rid, tag) => {
   }
 }
 
-// RicoUpdateTag('77937572', 'ARs')
-
 const RicoPostNewLead = async (PostingURL, data) => {
   try {
     const options = {
@@ -89,42 +87,9 @@ const RicoAppOutDupBlock = async (toSearch) => {
   }
 }
 
-RicoAppOutDupBlock(['5163034649', '5167994050'])
-
-// const RicoRecycleDupBlock = async (toSearch) => {
-//   try {
-//     const searchResults = await RicoSearch(toSearch, config.get('apiUrl'))
-
-//     if (searchResults.data.leads.total_results?.length <= 0) return false
-
-//     const leadsArray = searchResults.data.leads
-
-//     for (let i = 0; i < leadsArray.total_results; i++) {
-//       const leadToUpdate =
-//         {
-//           token: config.get('token'),
-//           stc_id: leadsArray[i].id,
-//           status: 'Dup Block',
-//         }(
-//           leadsArray[i].status === 'No Answer/Not In' ||
-//             leadsArray[i].status === 'Not statused yet'
-//         ) &&
-//         leadsArray[i].status != 'Power-Hour' &&
-//         leadsArray[i].status != 'Recycle-Senior' &&
-//         leadsArray[i].status != 'Recycle-Seniors'
-//           ? await RicoUpdateLead(leadToUpdate)
-//           : false
-//     }
-//   } catch (err) {
-//     console.error(err.message)
-//     res.status(500).send('Server Error')
-//   }
-// }
-
 module.exports = {
   RicoPostNewLead,
   RicoUpdateTag,
   RicoSearch,
   RicoAppOutDupBlock,
-  // RicoRecycleDupBlock,
 }

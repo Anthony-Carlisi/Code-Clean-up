@@ -1,11 +1,11 @@
-//Modules Needed
+//Modules
 const express = require('express')
 const rico = require('./hooks/RicochetHelper')
 const cron = require('node-cron')
 const recycle = require('./timedScripts/recycle')
+
 //Middleware
 const app = express()
-
 app.use(express.json({ extended: false }))
 app.use(
   express.urlencoded({
@@ -30,12 +30,14 @@ app.use(
   '/api/jotformSLSLandingPage',
   require('./routes/api/jotformSLSLandingPage')
 )
-//UPDATE RICOCHET TAG
+
+// Ricochet Update Tag
 app.post('/RicoTagUpdate', (req, res) => {
   rico.RicoUpdateTag(req.body.id, req.body.tag)
   res.sendStatus(200).end()
 })
 
+// Scheduled Tasks
 cron.schedule('0 0 1 * * *', () => {
   recycle.dailyAppOutRecycle()
 })
