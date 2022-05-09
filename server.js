@@ -1,7 +1,8 @@
 //Modules Needed
 const express = require('express')
 const rico = require('./hooks/RicochetHelper')
-
+const cron = require('node-cron')
+const recycle = require('./timedScripts/recycle')
 //Middleware
 const app = express()
 
@@ -21,12 +22,22 @@ app.use('/api/sfJotform', require('./routes/api/sfJotform'))
 app.use('/api/popCrumbs', require('./routes/api/popCrumbs'))
 app.use('/api/link', require('./routes/api/link'))
 app.use('/api/sms', require('./routes/api/sms'))
-app.use('/api/airtableToSalesforce', require('./routes/api/airtableToSalesforce'))
-app.use('/api/jotformSLSLandingPage', require('./routes/api/jotformSLSLandingPage'))
+app.use(
+  '/api/airtableToSalesforce',
+  require('./routes/api/airtableToSalesforce')
+)
+app.use(
+  '/api/jotformSLSLandingPage',
+  require('./routes/api/jotformSLSLandingPage')
+)
 //UPDATE RICOCHET TAG
 app.post('/RicoTagUpdate', (req, res) => {
   rico.RicoUpdateTag(req.body.id, req.body.tag)
   res.sendStatus(200).end()
+})
+
+cron.schedule('0 0 1 * * *', () => {
+  recycle.dailyAppOutRecycle()
 })
 
 app.listen(process.env.PORT || 4000)

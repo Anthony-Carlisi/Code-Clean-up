@@ -1,17 +1,14 @@
 const axios = require('axios')
-
-const token = 'cImmWdGz7YdpetM7qdy51Ss7mBCnZei47BlY1T9DOjgNBvwGpdIlQc0i9bdl'
-const apiUrl = 'https://sls.ricochet.me/api/v4/leads'
+const config = require('config')
 
 const RicoUpdateTag = async (rid, tag) => {
   try {
-    const options = {
+    const leadUpdate = await axios({
       method: 'POST',
-      headers: { 'X-Auth-Token': token },
+      headers: { 'X-Auth-Token': config.get('token') },
       data: { tags: [`${tag}`] },
-      url: `${apiUrl}/${rid}/tags`,
-    }
-    const leadUpdate = await axios(options)
+      url: `${config.get('apiUrl')}/${rid}/tags`,
+    })
     //Looking for status true on the return
     return leadUpdate.data.status
   } catch (err) {
@@ -31,38 +28,37 @@ const RicoPostNewLead = async (PostingURL, data) => {
     }
     const newLead = await axios(options)
     return newLead.data
-  } catch (error) {
+  } catch (err) {
     console.error(err.message)
-    res.status(500).send('Server Error')
   }
 }
 
-const RicoSearch = async (toSearch, url) => {
+const RicoSearch = async (toSearch) => {
   try {
-    const options = {
-      method: 'get',
-      url: url,
-      headers: { 'X-Auth-Token': token },
-      params: { search: toSearch },
-    }
-    const search = await axios(options)
-    return search.data
-  } catch (error) {
+    const searchPromises = toSearch.map(async (phone) => {
+      return await axios({
+        method: 'get',
+        url: config.get('apiUrl'),
+        headers: { 'X-Auth-Token': config.get('token') },
+        params: { search: `${phone}` },
+      })
+    })
+    const searchResults = await Promise.all(searchPromises)
+    return searchResults.data
+  } catch (err) {
     console.error(err.message)
-    res.status(500).send('Server Error')
   }
 }
 
 const RicoUpdateLead = async (data) => {
   try {
-    const options = {
+    const updateLead = await axios({
       method: 'post',
-      url: `${apiUrl}/externalupdate`,
+      url: `${config.get('apiUrl')}/externalupdate`,
       data: data,
-    }
-    const updateLead = await axios(options)
+    })
     return updateLead.data
-  } catch (error) {
+  } catch (err) {
     console.error(err.message)
     res.status(500).send('Server Error')
   }
@@ -70,7 +66,7 @@ const RicoUpdateLead = async (data) => {
 
 const RicoAppOutDupBlock = async (toSearch) => {
   try {
-    const searchResults = await RicoSearch(toSearch, apiUrl)
+    const searchResults = await RicoSearch(toSearch, config.get('apiUrl'))
 
     if (searchResults.data.leads.total_results?.length <= 0) return false
 
@@ -78,7 +74,7 @@ const RicoAppOutDupBlock = async (toSearch) => {
 
     for (let i = 0; i < leadsArray.total_results; i++) {
       const leadToUpdate = {
-        token: token,
+        token: config.get('token'),
         stc_id: leadsArray[i].id,
         status: 'Dup Block',
       }
@@ -88,48 +84,47 @@ const RicoAppOutDupBlock = async (toSearch) => {
         ? await RicoUpdateLead(leadToUpdate)
         : false
     }
-  } catch (error) {
+  } catch (err) {
     console.error(err.message)
-    res.status(500).send('Server Error')
   }
 }
 
-// RicoAppOutDupBlock('5163034649')
+RicoAppOutDupBlock(['5163034649', '5167994050'])
 
-const RicoRecycleDupBlock = async (toSearch) => {
-  try {
-    const searchResults = await RicoSearch(toSearch, apiUrl)
+// const RicoRecycleDupBlock = async (toSearch) => {
+//   try {
+//     const searchResults = await RicoSearch(toSearch, config.get('apiUrl'))
 
-    if (searchResults.data.leads.total_results?.length <= 0) return false
+//     if (searchResults.data.leads.total_results?.length <= 0) return false
 
-    const leadsArray = searchResults.data.leads
+//     const leadsArray = searchResults.data.leads
 
-    for (let i = 0; i < leadsArray.total_results; i++) {
-      const leadToUpdate =
-        {
-          token: token,
-          stc_id: leadsArray[i].id,
-          status: 'Dup Block',
-        }(
-          leadsArray[i].status === 'No Answer/Not In' ||
-            leadsArray[i].status === 'Not statused yet'
-        ) &&
-        leadsArray[i].status != 'Power-Hour' &&
-        leadsArray[i].status != 'Recycle-Senior' &&
-        leadsArray[i].status != 'Recycle-Seniors'
-          ? await RicoUpdateLead(leadToUpdate)
-          : false
-    }
-  } catch (error) {
-    console.error(err.message)
-    res.status(500).send('Server Error')
-  }
-}
+//     for (let i = 0; i < leadsArray.total_results; i++) {
+//       const leadToUpdate =
+//         {
+//           token: config.get('token'),
+//           stc_id: leadsArray[i].id,
+//           status: 'Dup Block',
+//         }(
+//           leadsArray[i].status === 'No Answer/Not In' ||
+//             leadsArray[i].status === 'Not statused yet'
+//         ) &&
+//         leadsArray[i].status != 'Power-Hour' &&
+//         leadsArray[i].status != 'Recycle-Senior' &&
+//         leadsArray[i].status != 'Recycle-Seniors'
+//           ? await RicoUpdateLead(leadToUpdate)
+//           : false
+//     }
+//   } catch (err) {
+//     console.error(err.message)
+//     res.status(500).send('Server Error')
+//   }
+// }
 
 module.exports = {
   RicoPostNewLead,
   RicoUpdateTag,
   RicoSearch,
   RicoAppOutDupBlock,
-  RicoRecycleDupBlock,
+  // RicoRecycleDupBlock,
 }

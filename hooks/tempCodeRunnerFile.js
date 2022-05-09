@@ -1,1 +1,1 @@
-  // console.log('test')
+airtableSearch('Merchant Records', '', 'Recycle List App Out')

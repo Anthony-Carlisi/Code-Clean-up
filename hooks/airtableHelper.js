@@ -9,8 +9,19 @@ const airtableSearch = async (table, filterFormula, scrubbingView) => {
   try {
     const records = await base(table)
       .select({
-        //Change filter params
         filterByFormula: filterFormula,
+        view: scrubbingView,
+      })
+      .all()
+    return records
+  } catch (error) {
+    console.log(error)
+  }
+}
+const airtableSearchView = async (table, scrubbingView) => {
+  try {
+    const records = await base(table)
+      .select({
         view: scrubbingView,
       })
       .all()
@@ -49,6 +60,7 @@ const airtableCreate = async (table, data) => {
 
 module.exports = {
   airtableSearch,
+  airtableSearchView,
   airtableUpdate,
   airtableCreate,
 }
