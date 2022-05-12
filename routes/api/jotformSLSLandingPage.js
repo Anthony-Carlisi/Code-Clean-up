@@ -44,10 +44,10 @@ router.post('/', async (req, res) => {
     lastName = contactInfo['field_6'],
     company = contactInfo['field_3'],
     email = contactInfo['field_5'],
-    phone = contactInfo['field_4'].replace(/[^0-9]/g, '')
+    phone = contactInfo['field_4'].replace(/[^0-9]/g, '').slice(-10)
 
   let group, leadSource
-  if (marketingMethod == 'EMCA Email - LP'){
+  if (marketingMethod == 'EMCA Email - LP') {
     group = 'Petar Email - LP'
     leadSource = 'Email'
     marketingMethod = 'Petar Email - LP'
@@ -106,9 +106,8 @@ router.post('/', async (req, res) => {
         phone: ${phone}`
       )
       res.status(418).end()
-    }
-    else{
-      console.error(error)
+    } else {
+      console.error('jotformSLSLandingPage.js: ' + error)
     }
   }
 })
