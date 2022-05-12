@@ -41,5 +41,11 @@ app.post('/RicoTagUpdate', (req, res) => {
 cron.schedule('0 0 1 * * *', () => {
   recycle.dailyAppOutRecycle()
 })
+cron.schedule('0 10 1 * * *', () => {
+  recycle.dailySubsCons()
+})
+cron.schedule('0 20 1 * * *', () => {
+  recycle.dailySubsConsDavino()
+})
 
 app.listen(process.env.PORT || 4000)
