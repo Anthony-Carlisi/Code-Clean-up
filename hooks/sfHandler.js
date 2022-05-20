@@ -26,17 +26,21 @@ const salesforceInsert = async (objectName, body) => {
     })
     return result
   } catch (error) {
-    console.log(error.name)
     return error
   }
 }
 
-// const saleforceSearch = async (query) => {
-//     try{
-
-//     }
-// }
+const salesforceQuery = async (query) => {
+  try{
+    let result = await conn.query(query)
+    return result
+  } catch (error){
+    console.error("sfHandler.js: " + error)
+    return error
+  }
+}
 
 module.exports = {
-    salesforceInsert
+    salesforceInsert,
+    salesforceQuery
 }

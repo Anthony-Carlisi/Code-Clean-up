@@ -46,6 +46,10 @@ router.post('/', async (req, res) => {
     email = contactInfo['field_5'],
     phone = contactInfo['field_4'].replace(/[^0-9]/g, '').slice(-10)
 
+  // console.log(JSON.parse(req.body.rawRequest))
+
+  // return res.sendStatus(200)
+
   let group, leadSource
   if (marketingMethod == 'EMCA Email - LP') {
     group = 'Petar Email - LP'
@@ -53,13 +57,46 @@ router.post('/', async (req, res) => {
     marketingMethod = 'Petar Email - LP'
   }
 
+  //Airtable duplicate checking
   const dupCheckPhoneMerchant = await dupBlockerCheck.dupCheck(
     [phone],
     'Merchant Records',
     'phone'
   )
-  if (dupCheckPhoneMerchant?.length > 0)
+
+  const dupCheckEmailMerchant = await dupBlockerCheck.dupCheck(
+    [email],
+    'Merchant Records',
+    'email'
+  )
+
+  const dupCheckPhoneInbound = await dupBlockerCheck.dupCheck(
+    [phone],
+    'Inbound Leads',
+    'phone'
+  )
+
+  const dupCheckEmailInbound = await dupBlockerCheck.dupCheck(
+    [email],
+    'Inbound Leads',
+    'email'
+  )
+
+  if (
+    dupCheckPhoneMerchant?.length > 0 ||
+    dupCheckEmailMerchant?.length > 0 ||
+    dupCheckPhoneInbound?.length > 0 ||
+    dupCheckEmailInbound?.length > 0
+  ) {
+    await emailNotifications.sendNotification(
+      //send to marketing and accounting
+      'marketing@straightlinesource.com',
+      `SLS Landing Page Duplicate Lead: Already in Stacker`,
+      JSON.stringify(JSON.parse(req.body.rawRequest), null, 2)
+    )
+
     return res.send(`This Lead is a Dup Block`)
+  }
 
   try {
     //create lead object
@@ -91,23 +128,29 @@ router.post('/', async (req, res) => {
         console.log('Created record id : ' + ret.id)
       }
     )
+
+    res.sendStatus(200)
   } catch (error) {
     if (error.name == 'DUPLICATES_DETECTED') {
-      console.error('Salesforce duplicate detected')
+      console.error('jotformSLSLandingPage.js: Salesforce duplicate detected')
       await emailNotifications.sendNotification(
         'marketing@straightlinesource.com',
-        `The Landing Page Lead "${company}" is a Duplicate`,
-        `campaignID: ${campaignID}\n
-        leadSource: ${marketingMethod}\n
-        firstName: ${firstName}\n
-        lastName: ${lastName}\n
-        company: ${company}\n
-        email: ${email}\n
-        phone: ${phone}`
+        `SLS Landing Page Duplicate Lead: Already in Salesforce`,
+        JSON.stringify(JSON.parse(req.body.rawRequest), null, 2)
       )
-      res.status(418).end()
+      res.sendStatus(418)
     } else {
       console.error('jotformSLSLandingPage.js: ' + error)
+      await emailNotifications.sendNotification(
+        'marketing@straightlinesource.com',
+        `Error Adding SLS Landing Page Lead to Salesforce`,
+        error.name +
+          ': ' +
+          error.message +
+          '\n' +
+          JSON.stringify(JSON.parse(req.body.rawRequest), null, 2)
+      )
+      res.sendStatus(500)
     }
   }
 })
