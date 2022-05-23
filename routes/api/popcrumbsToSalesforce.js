@@ -138,7 +138,7 @@ router.post('/', async (req, res) => {
 
     //create lead body
     const leadBody = {
-      // OwnerID: '00G8c000006CgNIEA0', unassigned queue
+      OwnerID: '00G8c000006CjhBEAS', //For Distribution Queue
       FirstName: firstName,
       LastName: lastName,
       company: companyName,
