@@ -51,10 +51,14 @@ router.post('/', async (req, res) => {
   // return res.sendStatus(200)
 
   let group, leadSource
-  if (marketingMethod == 'EMCA Email - LP') {
+  if (marketingMethod == 'EMCA Email - LP'){
     group = 'Petar Email - LP'
     leadSource = 'Email'
     marketingMethod = 'Petar Email - LP'
+  } else if (marketingMethod == 'Reup SMS - LP'){
+    group = 'Reup SMS - LP'
+    leadSource = 'SMS Reup'
+    marketingMethod = 'Reup SMS - LP'
   }
 
   //Airtable duplicate checking
