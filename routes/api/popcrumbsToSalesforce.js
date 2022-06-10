@@ -157,7 +157,6 @@ router.post('/', async (req, res) => {
       Maximum_Years_in_Business__c: maxYears,
       Minimum_Years_in_Business__c: minYears,
       LeadSource: 'Real Time',
-      ricoMarketingMethod__c: 'Dialer',
       CampaignID__c: queryResult.records[0].Id,
       Janati_RR__Round_Robin__c: 'Yes',
       Round_Robin_Assignment_Group__c: 'Real Time',
@@ -171,7 +170,7 @@ router.post('/', async (req, res) => {
       if (insertResult.name == 'DUPLICATES_DETECTED') {
         await emailNotification.sendNotification(
           //send to marketing and accounting
-          'marketing@straightlinesource.com, business@straightlinesource.com',
+          'marketing@straightlinesource.com, accounting@straightlinesource.com',
           'M80 RT Duplicate Lead: Already in Salesforce',
           JSON.stringify(req.body, null, 2) +
             '\n\nDuplicate Rule: ' +

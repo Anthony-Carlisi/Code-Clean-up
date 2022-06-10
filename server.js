@@ -35,6 +35,10 @@ app.use(
   require('./routes/api/jotformSLSLandingPage')
 )
 
+app.use('/api/businessLoansToSalesforce',
+require('./routes/api/businessLoansToSalesforce')
+)
+
 // Ricochet Update Tag
 app.post('/RicoTagUpdate', (req, res) => {
   rico.RicoUpdateTag(req.body.id, req.body.tag)
