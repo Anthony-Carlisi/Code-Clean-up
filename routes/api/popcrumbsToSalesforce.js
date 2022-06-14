@@ -170,7 +170,7 @@ router.post('/', async (req, res) => {
       if (insertResult.name == 'DUPLICATES_DETECTED') {
         await emailNotification.sendNotification(
           //send to marketing and accounting
-          'marketing@straightlinesource.com, accounting@straightlinesource.com',
+          'marketing@straightlinesource.com, accounting@straightlinesource.com, vmangone@straightlinesource.com',
           'M80 RT Duplicate Lead: Already in Salesforce',
           JSON.stringify(req.body, null, 2) +
             '\n\nDuplicate Rule: ' +

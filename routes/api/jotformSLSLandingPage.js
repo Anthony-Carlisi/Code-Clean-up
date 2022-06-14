@@ -138,8 +138,8 @@ router.post('/', async (req, res) => {
     if (error.name == 'DUPLICATES_DETECTED') {
       console.error('jotformSLSLandingPage.js: Salesforce duplicate detected')
       await emailNotifications.sendNotification(
-        'marketing@straightlinesource.com',
-        `SLS Landing Page Duplicate Lead: Already in Salesforce`,
+        'marketing@straightlinesource.com, vmangone@straightlinesource.com',
+        `Landing Page Duplicate Lead: Already in Salesforce`,
         JSON.stringify(JSON.parse(req.body.rawRequest), null, 2)
       )
       res.sendStatus(418)
@@ -147,7 +147,7 @@ router.post('/', async (req, res) => {
       console.error('jotformSLSLandingPage.js: ' + error)
       await emailNotifications.sendNotification(
         'marketing@straightlinesource.com',
-        `Error Adding SLS Landing Page Lead to Salesforce`,
+        `Error Adding Landing Page Lead to Salesforce`,
         error.name +
           ': ' +
           error.message +
