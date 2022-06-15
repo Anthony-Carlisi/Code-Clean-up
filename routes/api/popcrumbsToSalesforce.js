@@ -157,6 +157,7 @@ router.post('/', async (req, res) => {
       Maximum_Years_in_Business__c: maxYears,
       Minimum_Years_in_Business__c: minYears,
       LeadSource: 'Real Time',
+      Lead_Source_Detail__c: 'US Business Funding',
       CampaignID__c: queryResult.records[0].Id,
       Janati_RR__Round_Robin__c: 'Yes',
       Round_Robin_Assignment_Group__c: 'Real Time',
