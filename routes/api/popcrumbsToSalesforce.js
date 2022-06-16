@@ -28,6 +28,7 @@ router.post('/', async (req, res) => {
       Requested_Loan_Amount: requestedAmount,
       Monthly_Gross_Sales: monthlySales,
       Time_In_Business: yearsInBusiness,
+      IP_Address: IP
     } = req.body
     // console.log(req.body)
 
@@ -161,6 +162,7 @@ router.post('/', async (req, res) => {
       CampaignID__c: queryResult.records[0].Id,
       Janati_RR__Round_Robin__c: 'Yes',
       Round_Robin_Assignment_Group__c: 'Real Time',
+      IP_Address__c: IP
     }
 
     //add lead to SF

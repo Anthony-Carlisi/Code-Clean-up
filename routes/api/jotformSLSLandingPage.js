@@ -44,18 +44,19 @@ router.post('/', async (req, res) => {
     lastName = contactInfo['field_6'],
     company = contactInfo['field_3'],
     email = contactInfo['field_5'],
-    phone = contactInfo['field_4'].replace(/[^0-9]/g, '').slice(-10)
+    phone = contactInfo['field_4'].replace(/[^0-9]/g, '').slice(-10),
+    IP = req.body.ip
 
   // console.log(JSON.parse(req.body.rawRequest))
 
   // return res.sendStatus(200)
 
   let group, leadSource
-  if (marketingMethod == 'EMCA Email - LP'){
+  if (marketingMethod == 'EMCA Email - LP') {
     group = 'Petar Email - LP'
     leadSource = 'Email'
     marketingMethod = 'Petar Email - LP'
-  } else if (marketingMethod == 'Reup SMS - LP'){
+  } else if (marketingMethod == 'Reup SMS - LP') {
     group = 'Reup SMS - LP'
     leadSource = 'SMS Reup'
     marketingMethod = 'Reup SMS - LP'
@@ -123,6 +124,7 @@ router.post('/', async (req, res) => {
         LeadSource: leadSource,
         ricoMarketingMethod__c: marketingMethod,
         CampaignID__c: campaignID,
+        IP_Address__c: IP,
         //Round Robin
         Janati_RR__Round_Robin__c: 'Yes',
         Round_Robin_Assignment_Group__c: group,
