@@ -110,7 +110,7 @@ router.post('/', async (req, res) => {
         //Lead Info
         FirstName: firstName,
         LastName: lastName,
-        phone: phone,
+        MobilePhone: phone,
         company: company,
         email: email,
         McaApp__Credit_Score__c: creditScore,
