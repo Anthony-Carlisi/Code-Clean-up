@@ -120,6 +120,7 @@ router.post('/', async (req, res) => {
         McaApp__Years_in_Business__c: Math.round(
           (Date.now() - Date.parse(startYear)) / (1000 * 60 * 60 * 24 * 365)
         ),
+        Description: 'Account Type: ' + accountType,
         //Marketing
         LeadSource: leadSource,
         ricoMarketingMethod__c: marketingMethod,
