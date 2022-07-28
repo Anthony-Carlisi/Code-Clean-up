@@ -25,8 +25,10 @@ router.post('/', async (req, res) => {
     } = leadInfo
 
     let fullName = Owner_Name.split(' ')
-
     let minIncome, maxIncome, minTIB, maxTIB
+
+    let mobilePH = Line_Type == 'Phone Number' ? Phone : ''
+    let phonePH = Line_Type != 'Phone Number' ? Phone : ''
 
     //Income Range
     let incomeMatches = Income.match(/[0-9]+,[0-9]+/g)
@@ -48,24 +50,32 @@ router.post('/', async (req, res) => {
       maxTIB = tibMatches[0]
     }
 
+    //find latest M80 RT campaign in SF
+    let campaignQuery = await sfHandler.salesforceQuery(
+      `SELECT name, id FROM Campaign WHERE ParentId='7018c0000026vLAAAY' AND IsActive=true ORDER BY CreatedDate DESC LIMIT 1`
+    )
+
     //create lead body
     const leadBody = {
       FirstName: fullName[0],
       LastName: fullName[fullName.size() - 1],
       company: Company_Name,
       email: Email,
-      phone: Phone,
+      mobile: mobilePH,
+      phone: phonePH,
       state: State,
       Maximum_Monthly_Sales__c: maxIncome,
       Minimum_Monthly_Sales__c: minIncome,
       Maximum_Years_in_Business__c: maxTIB,
       Minimum_Years_in_Business__c: minTIB,
+      Current_Balance__c: Loan_Balance.match(/[0-9,]+/g)[0].replace(',',''),
+      McaApp__Use_of_Proceeds__c: Primary_Use_Of_Funds,
+      Accept_Credit_Cards__c: Accept_Credit_Cards,
       LeadSource: 'Real Time',
-      //Create these field values
       Lead_Source_Detail__c: 'Pricing Calculator',
-      CampaignID__c: queryResult.records[0].Id,
+      CampaignID__c: campaignQuery.records[0].Id,
       Janati_RR__Round_Robin__c: 'Yes',
-      Round_Robin_Assignment_Group__c: 'Enablement',
+      Round_Robin_Assignment_Group__c: 'Pricing Calculator',
     }
 
     //add lead to SF
