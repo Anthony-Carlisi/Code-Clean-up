@@ -61,7 +61,7 @@ router.post('/', async (req, res) => {
       await emailNotifications.sendNotification(
         //send to marketing and accounting
         'marketing@straightlinesource.com',
-        `SLS Landing Page Duplicate Lead: Already in Stacker`,
+        `Enablement Duplicate Lead: Already in Stacker`,
         JSON.stringify(JSON.parse(req.body.rawRequest), null, 2)
       )
 
