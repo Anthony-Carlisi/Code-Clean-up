@@ -1,6 +1,9 @@
 const express = require('express')
 const router = express.Router()
 const sfHandler = require('../../hooks/sfHandler')
+const dupBlockerCheck = require('../../hooks/dupBlockerCheck')
+const emailNotification = require('../../hooks/emailNotifications')
+const config = require('config')
 
 router.post('/', async (req, res) => {
   try {
