@@ -9,6 +9,7 @@ router.post('/', async (req, res) => {
   try {
     let leadInfo = req.body
     let {
+      IP_Address,
       Submit_Date,
       Owner_Name,
       Company_Name,
@@ -25,6 +26,7 @@ router.post('/', async (req, res) => {
       Line_Type,
       Line_Status,
       Email_Status,
+      Lead_ID,
     } = leadInfo
 
     //Airtable duplicate checking
@@ -69,19 +71,37 @@ router.post('/', async (req, res) => {
     }
 
     let fullName = Owner_Name.split(' ')
-    let minIncome, maxIncome, minTIB, maxTIB
+    let minIncome,
+      maxIncome,
+      minTIB,
+      maxTIB,
+      loanBalance,
+      description = ''
 
     let mobilePH = Line_Type == 'Phone Number' ? Phone : ''
     let phonePH = Line_Type != 'Phone Number' ? Phone : ''
 
     //Income Range
-    let incomeMatches = Income.match(/[0-9]+,[0-9]+/g)
-    if (incomeMatches.length == 2) {
-      minIncome = incomeMatches[0].replace(',', '')
-      maxIncome = incomeMatches[1].replace(',', '')
-    } else if (incomeMatches.length == 1) {
-      minIncome = incomeMatches[0].replace(',', '')
-      maxIncome = incomeMatches[0].replace(',', '')
+    let incomeMatches1 = Income.match(/[0-9]+[kK]/g) //matches range with 'k' for thousand
+    let incomeMatches2 = Income.match(/[0-9,]+/g) //matches range of many formats
+    if (incomeMatches1 != null) {
+      if (incomeMatches1.length == 2) {
+        minIncome = incomeMatches1[0].replace(/[kK]/, '000')
+        maxIncome = incomeMatches1[1].replace(/[kK]/, '000')
+      } else if (incomeMatches1.length == 1) {
+        minIncome = incomeMatches1[0].replace(/[kK]/, '000')
+        maxIncome = incomeMatches1[0].replace(/[kK]/, '000')
+      }
+    } else if (incomeMatches2 != null) {
+      if (incomeMatches2.length == 2) {
+        minIncome = incomeMatches2[0].replace(',', '')
+        maxIncome = incomeMatches2[1].replace(',', '')
+      } else if (incomeMatches2.length == 1) {
+        minIncome = incomeMatches2[0].replace(',', '')
+        maxIncome = incomeMatches2[0].replace(',', '')
+      }
+    } else {
+      description += 'Income: ' + Income + '\n'
     }
 
     //Time in Business Range
@@ -92,6 +112,19 @@ router.post('/', async (req, res) => {
     } else if (tibMatches.length == 1) {
       minTIB = tibMatches[0]
       maxTIB = tibMatches[0]
+    } else {
+      description += 'Time in Business: ' + Time_In_Business + '\n'
+    }
+
+    //Loan Balance Range
+    let balanceMatches1 = Loan_Balance.match(/[0-9]+[kK]/g) //matches range with 'k' for thousand
+    let balanceMatches2 = Loan_Balance.match(/[0-9,]+/g) //matches range of many formats
+    if (balanceMatches1 != null) {
+      loanBalance = balanceMatches1[0].replace(/[kK]/, '000')
+    } else if (balanceMatches2 != null) {
+      loanBalance = balanceMatches2[0].replace(',', '')
+    } else {
+      description += 'Loan Balance: ' + Loan_Balance + '\n'
     }
 
     //find latest M80 RT campaign in SF
@@ -101,6 +134,7 @@ router.post('/', async (req, res) => {
 
     //create lead body
     const leadBody = {
+      IP_Address__c: IP_Address,
       FirstName: fullName[0],
       LastName: fullName[fullName.length - 1],
       company: Company_Name,
@@ -112,9 +146,11 @@ router.post('/', async (req, res) => {
       Minimum_Monthly_Sales__c: minIncome,
       Maximum_Years_in_Business__c: maxTIB,
       Minimum_Years_in_Business__c: minTIB,
-      Current_Balance__c: Loan_Balance.match(/[0-9,]+/g)[0].replace(',', ''),
+      Current_Balance__c: loanBalance,
       McaApp__Use_of_Proceeds__c: Primary_Use_Of_Funds,
       Accept_Credit_Cards__c: Accept_Credit_Cards,
+      BL_com_Lead_Id__c: Lead_ID,
+      Description: description,
       LeadSource: 'Real Time',
       Lead_Source_Detail__c: 'Pricing Calculator',
       CampaignID__c: campaignQuery.records[0].Id,
