@@ -189,7 +189,18 @@ router.post('/', async (req, res) => {
     //Return ok
     res.sendStatus(200)
   } catch (err) {
-    console.error(err.message)
+    console.error("enablementToSalesforce: " + err.message)
+    await emailNotification.sendNotification(
+      //send to marketing
+      'ehernandez@straightlinesource.com',
+      'Error adding Enablement Lead to Salesforce',
+      insertResult.name +
+        ': ' +
+        insertResult.message +
+        '\n' +
+        JSON.stringify(req.body, null, 2) +
+        '\n\n' + err
+    )
     res.sendStatus(500)
   }
 })
