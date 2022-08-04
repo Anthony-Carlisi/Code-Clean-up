@@ -76,7 +76,8 @@ router.post('/', async (req, res) => {
       minTIB,
       maxTIB,
       loanBalance,
-      description = ''
+      description = '',
+      acceptCC = Accept_Credit_Cards
 
     let mobilePH = Line_Type == 'Phone Number' ? Phone : ''
     let phonePH = Line_Type != 'Phone Number' ? Phone : ''
@@ -100,7 +101,7 @@ router.post('/', async (req, res) => {
         minIncome = incomeMatches2[0].replace(',', '')
         maxIncome = incomeMatches2[0].replace(',', '')
       }
-    } else {
+    } else if (Income != ''){
       description += 'Income: ' + Income + '\n'
     }
 
@@ -112,7 +113,7 @@ router.post('/', async (req, res) => {
     } else if (tibMatches.length == 1) {
       minTIB = tibMatches[0]
       maxTIB = tibMatches[0]
-    } else {
+    } else if(Time_In_Business != ''){
       description += 'Time in Business: ' + Time_In_Business + '\n'
     }
 
@@ -123,11 +124,17 @@ router.post('/', async (req, res) => {
       loanBalance = balanceMatches1[0].replace(/[kK]/, '000')
     } else if (balanceMatches2 != null) {
       loanBalance = balanceMatches2[0].replace(',', '')
-    } else {
+    } else if (Loan_Balance != '') {
       description += 'Loan Balance: ' + Loan_Balance + '\n'
     }
 
-    //find latest M80 RT campaign in SF
+    //Accept Credit Cards
+    if (acceptCC == 'TRUE')
+      acceptCC = 'Yes'
+    else if(acceptCC == 'FALSE')
+      acceptCC = 'No'
+
+    //find latest Joins campaign in SF
     let campaignQuery = await sfHandler.salesforceQuery(
       `SELECT name, id FROM Campaign WHERE ParentId='7018c0000026vLAAAY' AND IsActive=true ORDER BY CreatedDate DESC LIMIT 1`
     )
@@ -148,7 +155,7 @@ router.post('/', async (req, res) => {
       Minimum_Years_in_Business__c: minTIB,
       Current_Balance__c: loanBalance,
       McaApp__Use_of_Proceeds__c: Primary_Use_Of_Funds,
-      Accept_Credit_Cards__c: Accept_Credit_Cards,
+      Accept_Credit_Cards__c: acceptCC,
       BL_com_Lead_Id__c: Lead_ID,
       Description: description,
       LeadSource: 'Real Time',
