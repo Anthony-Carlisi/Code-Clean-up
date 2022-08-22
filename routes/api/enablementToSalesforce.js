@@ -160,6 +160,7 @@ router.post('/', async (req, res) => {
       Description: description,
       LeadSource: 'Real Time',
       Lead_Source_Detail__c: 'Pricing Calculator',
+      Lead_Type__c: 'Inbound',
       CampaignID__c: campaignQuery.records[0].Id,
       Janati_RR__Round_Robin__c: 'Yes',
       Round_Robin_Assignment_Group__c: 'Pricing Calculator',

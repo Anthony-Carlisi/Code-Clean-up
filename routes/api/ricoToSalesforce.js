@@ -126,8 +126,8 @@ router.get('/', async (req, res) => {
         CampaignID__c: campaignId,
         ricoLeadSource__c: leadSource,
         ricoVendor__c: vendor,
-        LeadSource: 'Outbound',
-        Lead_Source_Detail__c: 'Ricochet',
+        LeadSource: 'Ricochet',
+        Lead_Type__c: 'Outbound',
         ricoUploadDate__c: Date.parse(uploadDate),
       },
       function (err, ret) {

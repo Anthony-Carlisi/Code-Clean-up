@@ -51,14 +51,15 @@ router.post('/', async (req, res) => {
 
   // return res.sendStatus(200)
 
-  let group, leadSource
+  let group, leadSource, leadSourceDetail
   if (marketingMethod == 'EMCA Email - LP') {
     group = 'Petar Email - LP'
-    leadSource = 'Email'
+    leadSource = 'Email Petar'
     marketingMethod = 'Petar Email - LP'
   } else if (marketingMethod == 'Reup SMS - LP') {
     group = 'Reup SMS - LP'
-    leadSource = 'SMS Reup'
+    leadSource = 'Website'
+    leadSourceDetail = 'Straight Line Source'
     marketingMethod = 'Reup SMS - LP'
   }
 
@@ -123,6 +124,8 @@ router.post('/', async (req, res) => {
         Description: 'Account Type: ' + accountType,
         //Marketing
         LeadSource: leadSource,
+        Lead_Type__c: 'Inbound',
+        Lead_Source_Detail__c: leadSourceDetail,
         ricoMarketingMethod__c: marketingMethod,
         CampaignID__c: campaignID,
         IP_Address__c: IP,
