@@ -61,6 +61,11 @@ router.post('/', async (req, res) => {
     leadSource = 'Website'
     leadSourceDetail = 'Straight Line Source'
     marketingMethod = 'Reup SMS - LP'
+  } else {
+    group = 'Organic'
+    leadSource = 'Website'
+    leadSourceDetail = 'Straight Line Source'
+    marketingMethod = 'Organic'
   }
 
   //Airtable duplicate checking
