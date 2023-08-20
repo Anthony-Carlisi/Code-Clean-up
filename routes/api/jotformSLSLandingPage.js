@@ -31,14 +31,18 @@ router.post('/', async (req, res) => {
 
   let {
       q23_amountRequested: amountRequested,
-      q6_startYear: startYear,
+      // q6_startYear: startYear,
+      q40_businessYears: yearsInBusiness,
       q10_industry: industry,
-      q7_accountType: accountType,
+      // q7_accountType: accountType,
       q24_monthlyRevenue: monthlyRevenue,
       q26_creditScore: creditScore,
       q17_contactInfo: contactInfo,
       q20_marketingMethod: marketingMethod,
       q29_campaignID: campaignID,
+      q35_intendedUse: intendedUse,
+      q36_transferExpectations: transferExpectations,
+      q38_mostImportant: mostImportant,
     } = JSON.parse(req.body.rawRequest),
     firstName = contactInfo['field_1'],
     lastName = contactInfo['field_6'],
@@ -123,10 +127,8 @@ router.post('/', async (req, res) => {
         Industry: industry,
         McaApp__Amount_Requested__c: amountRequested,
         McaApp__Monthly_Gross_Sales__c: monthlyRevenue,
-        McaApp__Years_in_Business__c: Math.round(
-          (Date.now() - Date.parse(startYear)) / (1000 * 60 * 60 * 24 * 365)
-        ),
-        Description: 'Account Type: ' + accountType,
+        McaApp__Years_in_Business__c: yearsInBusiness,
+        Description: 'Intended use: ' + intendedUse+'\nTransfer Expectations: '+transferExpectations+'\nMost Important: '+mostImportant,
         //Marketing
         LeadSource: leadSource,
         Lead_Type__c: 'Inbound',
