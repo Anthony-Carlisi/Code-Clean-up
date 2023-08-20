@@ -49,6 +49,11 @@ app.post('/RicoTagUpdate', (req, res) => {
   res.sendStatus(200).end()
 })
 
+app.post('testRoute', (req, res) => {
+  console.debug('Inside test route...')
+  res.sendStatus(200).end()
+})
+
 // Scheduled Tasks
 cron.schedule('0 0 1 * * *', () => {
   recycle.dailyAppOutRecycle()
